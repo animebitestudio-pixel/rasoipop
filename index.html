@@ -1,0 +1,875 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"></head><body>
+<title>RasoiPop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#587A55">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout concept: one friendly column on phones with a bottom tab bar; a left rail and wider grids on tablet/desktop.
+   Sage carries structure, tangerine is the "pop" for actions and alerts, warm cream is the ground. */
+:root{
+  --f-head:'Fredoka',ui-rounded,'Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --bg:#FBF4E6; --surface:#FFFDF8; --surface2:#F5EBD6; --ink:#2C2B27; --muted:#6B675A; --line:#E8DDC6;
+  --sage:#587A55; --sage-d:#3F5C3D; --sage-soft:#E2EBD9; --on-sage:#FFFFFF;
+  --tang:#F58A1F; --tang-soft:#FFE6CA; --tang-ink:#8F4707; --on-tang:#2C2B27;
+  --good:#456F42; --warn:#B85C00; --bad:#B8362B; --low:#7A5F00;
+  --good-bg:#E2EBD9; --warn-bg:#FFE6CA; --bad-bg:#FADAD5; --low-bg:#F6EAB5;
+  --shadow:0 6px 22px rgba(90,65,20,.10); --shadow-s:0 2px 8px rgba(90,65,20,.08);
+  --l1:87%; --l2:75%; --scrim:rgba(40,30,10,.45);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1A1C17; --surface:#242720; --surface2:#2E3228; --ink:#F2EEDF; --muted:#B2AF9C; --line:#3B4033;
+  --sage:#93B98F; --sage-d:#B7D6B3; --sage-soft:#2E3B2C; --on-sage:#142012;
+  --tang:#FF9D42; --tang-soft:#48301A; --tang-ink:#FFC48A; --on-tang:#1E1608;
+  --good:#9CC498; --warn:#FFB066; --bad:#FF8F82; --low:#E8CB5B;
+  --good-bg:#2E3B2C; --warn-bg:#48301A; --bad-bg:#4B2622; --low-bg:#433B15;
+  --shadow:0 6px 22px rgba(0,0,0,.35); --shadow-s:0 2px 8px rgba(0,0,0,.3);
+  --l1:36%; --l2:27%; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1A1C17; --surface:#242720; --surface2:#2E3228; --ink:#F2EEDF; --muted:#B2AF9C; --line:#3B4033;
+  --sage:#93B98F; --sage-d:#B7D6B3; --sage-soft:#2E3B2C; --on-sage:#142012;
+  --tang:#FF9D42; --tang-soft:#48301A; --tang-ink:#FFC48A; --on-tang:#1E1608;
+  --good:#9CC498; --warn:#FFB066; --bad:#FF8F82; --low:#E8CB5B;
+  --good-bg:#2E3B2C; --warn-bg:#48301A; --bad-bg:#4B2622; --low-bg:#433B15;
+  --shadow:0 6px 22px rgba(0,0,0,.35); --shadow-s:0 2px 8px rgba(0,0,0,.3);
+  --l1:36%; --l2:27%; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-body);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:1.75rem}h2{font-size:1.3rem}h3{font-size:1.05rem}
+p{margin:0}
+:focus-visible{outline:3px solid var(--tang);outline-offset:2px;border-radius:8px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1180px;margin:0 auto}
+.mut{color:var(--muted)}.sm{font-size:.85rem}.num{font-variant-numeric:tabular-nums}
+.ic{flex:none;display:block}
+
+/* header */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid transparent}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:600;font-size:1.45rem;letter-spacing:-.01em}
+.brand b{color:var(--tang);font-weight:600}
+.hright{display:flex;align-items:center;gap:10px}
+.offpill{background:var(--warn-bg);color:var(--tang-ink);font-weight:800;font-size:.78rem;padding:5px 10px;border-radius:99px}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--sage);color:var(--on-sage);font-family:var(--f-head);font-size:1.15rem;display:grid;place-items:center}
+.l-pot{fill:var(--sage)}.l-rim{fill:var(--sage-d)}.l-b{fill:var(--tang)}.l-s{stroke:var(--tang);fill:none}.l-h{fill:var(--bg);opacity:.75}
+
+/* nav */
+.main{padding-block:8px 112px;min-height:70vh}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -4px 18px rgba(80,60,20,.07)}
+.navin{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding-top:6px;padding-bottom:6px}
+.nb{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:14px;font-size:.72rem;font-weight:700;color:var(--muted);min-height:52px}
+.nb.on{background:var(--sage-soft);color:var(--sage-d)}
+.badge{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--tang);color:var(--on-tang);font-size:.68rem;font-weight:800;display:grid;place-items:center;padding:0 4px}
+@media(min-width:900px){
+  .nav{top:0;right:auto;width:96px;border-top:0;border-right:1px solid var(--line);padding-top:84px;box-shadow:none}
+  .navin{display:flex;flex-direction:column;padding:0 8px;gap:6px;max-width:none}
+  .nb{font-size:.76rem;padding:10px 2px}
+  body{padding-left:96px}.hdr .wrap{padding-left:24px}.main{padding-bottom:48px}
+  .hdr{position:sticky}.brand{margin-left:-80px;padding-left:14px;position:relative;z-index:26}
+}
+
+/* sections, cards */
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:10px 0 14px}
+.sec{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:26px 0 10px}
+.card{background:var(--surface);border-radius:20px;box-shadow:var(--shadow-s);border:1px solid var(--line)}
+.pad{padding:14px}
+.grid{display:grid;gap:12px}
+.g-meals{grid-template-columns:repeat(auto-fill,minmax(min(100%,165px),1fr))}
+.g-rec{grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr))}
+.g-two{grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))}
+.g-qa{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:10px;min-width:0}
+.row.wrapr{flex-wrap:wrap}.grow{flex:1;min-width:0}
+.hero{background:linear-gradient(135deg,var(--sage-soft),var(--tang-soft));border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line)}
+.hero .date{font-weight:800;color:var(--sage-d);font-size:.9rem}
+.hero .tag{font-family:var(--f-head);color:var(--tang-ink);font-size:1.05rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px;margin-top:8px}
+.stat{background:var(--surface);border-radius:16px;padding:10px 12px;text-align:left;box-shadow:var(--shadow-s);display:flex;flex-direction:column;gap:0;min-width:0}
+.stat b{font-family:var(--f-head);font-size:1.5rem;line-height:1.1}
+.stat span{font-size:.8rem;font-weight:700;color:var(--muted)}
+.stat.alert b{color:var(--warn)}
+
+/* tiles (recipe art) */
+.tile{position:relative;aspect-ratio:4/3;width:100%;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 20% 15%,hsl(var(--h) 70% calc(var(--l1) + 6%)) 0 18%,transparent 19%),
+  radial-gradient(circle at 85% 90%,hsl(var(--h) 55% calc(var(--l2) - 6%)) 0 22%,transparent 23%),
+  linear-gradient(135deg,hsl(var(--h) 62% var(--l1)),hsl(var(--h) 55% var(--l2)))}
+.tile .e{font-size:3.2rem;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile.sq{aspect-ratio:1;border-radius:14px;width:56px}.tile.sq .e{font-size:1.8rem}
+.tile.wide{aspect-ratio:16/10;max-height:300px}.tile.wide .e{font-size:5rem}
+.rc{position:relative;background:var(--surface);border-radius:20px;box-shadow:var(--shadow-s);border:1px solid var(--line);overflow:hidden}
+.rc-main{display:block;width:100%;text-align:left}
+.rc-b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px}
+.rc-b h3{font-size:1rem}
+.heart{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;box-shadow:var(--shadow-s)}
+.heart.on{color:var(--tang)}.heart.on svg{fill:currentColor}
+
+/* chips, buttons, fields */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:thin}
+.chips.wr{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;padding:8px 14px;border-radius:99px;background:var(--surface);border:1.5px solid var(--line);font-weight:700;font-size:.9rem;white-space:nowrap;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--sage);color:var(--on-sage);border-color:var(--sage)}
+.chip.tg.on{background:var(--tang);color:var(--on-tang);border-color:var(--tang)}
+.chip.sm{min-height:32px;padding:4px 10px;font-size:.8rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 18px;border-radius:14px;font-weight:800;background:var(--surface2);color:var(--ink);border:1.5px solid var(--line)}
+.btn.pri{background:var(--sage);color:var(--on-sage);border-color:var(--sage)}
+.btn.tang{background:var(--tang);color:var(--on-tang);border-color:var(--tang)}
+.btn.line{background:transparent;border-color:var(--sage);color:var(--sage-d)}
+.btn.danger{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.btn.s{min-height:38px;padding:0 12px;font-size:.88rem;border-radius:12px}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ib{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--muted);background:var(--surface2);flex:none}
+.ib.on{color:var(--tang)}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>label,.lab{font-weight:800;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{width:100%;min-height:46px;padding:10px 12px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);min-width:0}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--tang);outline-offset:0;border-color:var(--tang)}
+.search{position:relative}.search svg{position:absolute;left:12px;top:13px;color:var(--muted)}.search input{padding-left:40px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;font-weight:700}
+.sw button{width:52px;height:30px;border-radius:15px;background:var(--line);position:relative;flex:none}
+.sw button::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.sw button[aria-checked=true]{background:var(--sage)}.sw button[aria-checked=true]::after{transform:translateX(22px)}
+.step{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border-radius:14px;padding:3px}
+.step button{width:38px;height:38px;border-radius:11px;background:var(--surface);display:grid;place-items:center;font-weight:800}
+.step span{min-width:34px;text-align:center;font-weight:800}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:.75rem;font-weight:800;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.low{background:var(--low-bg);color:var(--low)}
+.pill.n{background:var(--surface2);color:var(--muted)}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.bar{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden}.bar i{display:block;height:100%;background:var(--sage);border-radius:4px}
+.bar.tg i{background:var(--tang)}
+
+/* meals */
+.meal{display:flex;flex-direction:column;overflow:hidden}
+.meal .tile{aspect-ratio:16/10}.meal .tile .e{font-size:2.4rem}
+.meal .mb{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.meal .sl{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--sage-d)}
+.meal h3{font-size:1rem}
+.meal .ba{display:flex;gap:6px;margin-top:auto;padding-top:8px}
+.meal .ba .btn{flex:1;padding:0 8px}
+.meal.none{border:2px dashed var(--line);box-shadow:none;background:transparent;justify-content:center;align-items:flex-start;padding:12px;gap:6px;min-height:170px}
+.mrow{display:flex;gap:12px;align-items:center;padding:10px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%}
+.mrow .tile.sq{width:56px}
+.mrow.mt{padding:8px 10px}
+
+/* planner */
+.day{padding:12px}.day.past{opacity:.6}
+.day-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.slot{display:grid;grid-template-columns:62px 1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.slot .sl{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--sage-d)}
+.sl-main{display:flex;align-items:center;gap:10px;text-align:left;min-width:0}
+.sl-main .tile.sq{width:44px;border-radius:12px}.sl-main .tile.sq .e{font-size:1.4rem}
+.sl-main b{display:block;font-size:.95rem;line-height:1.2}.sl-main small{color:var(--muted);font-weight:700}
+.sl-add{grid-column:2/5;justify-self:start;display:flex;align-items:center;gap:6px;color:var(--tang-ink);font-weight:800;padding:8px 4px;min-height:44px}
+
+/* pantry & shopping */
+.pit{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:12px;align-items:center;padding:12px}
+.pit .tile.sq{width:52px}
+.pit h3{font-size:1rem}
+.qty{display:inline-flex;align-items:center;gap:2px;background:var(--surface2);border-radius:12px;padding:2px}
+.qty button{width:34px;height:34px;border-radius:10px;background:var(--surface);display:grid;place-items:center}
+.qty b{min-width:64px;text-align:center;font-size:.9rem}
+.pa{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}
+.stat-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:22;height:54px;padding:0 20px;border-radius:27px;background:var(--tang);color:var(--on-tang);font-weight:800;display:flex;align-items:center;gap:8px;box-shadow:0 8px 22px rgba(245,138,31,.4)}
+@media(min-width:900px){.fab{bottom:24px}}
+.gh{display:flex;align-items:center;gap:8px;margin:18px 0 8px;font-family:var(--f-head);font-size:1.05rem;color:var(--sage-d)}
+.sit{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 10px}
+.sit.done .nm{text-decoration:line-through;color:var(--muted)}
+.ck{width:30px;height:30px;border-radius:10px;border:2px solid var(--sage);display:grid;place-items:center;color:transparent;background:var(--surface);flex:none}
+.ck.on{background:var(--sage);color:var(--on-sage)}
+.sit input[type=number]{width:74px;min-height:38px;padding:4px 8px}
+.empty{text-align:center;padding:28px 16px;border:2px dashed var(--line);border-radius:22px;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty b{font-family:var(--f-head);font-size:1.15rem;color:var(--ink)}
+.skeleton{height:120px;border-radius:20px;background:linear-gradient(90deg,var(--surface2),var(--surface),var(--surface2));background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* modal & overlay */
+.bd{position:fixed;inset:0;z-index:60;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;border-radius:26px 26px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@media(min-width:700px){.bd{align-items:center}.sheet{border-radius:26px}}
+.sh-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ov{position:fixed;inset:0;z-index:50;background:var(--bg);overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+.ov-in{max-width:820px;margin:0 auto}
+.ov-top{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;gap:8px;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:8px;background:linear-gradient(var(--bg) 60%,transparent)}
+.ov-hero{margin:0 -16px;border-radius:0 0 26px 26px;overflow:hidden}
+.ing{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.ing.done .t{text-decoration:line-through;color:var(--muted)}
+.stp{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.stp i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--sage-soft);color:var(--sage-d);font-weight:800;display:grid;place-items:center}
+.nutr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.nutr div{background:var(--surface2);border-radius:14px;padding:8px 4px}.nutr b{display:block;font-family:var(--f-head);font-size:1.15rem}.nutr span{font-size:.72rem;font-weight:700;color:var(--muted)}
+.cook{display:flex;flex-direction:column;min-height:100vh;gap:14px}
+.cook-step{font-family:var(--f-head);font-size:clamp(1.5rem,5.2vw,2.3rem);line-height:1.25;font-weight:500}
+.cook-nav{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 2fr;gap:10px;padding:12px 0 6px;background:linear-gradient(transparent,var(--bg) 35%)}
+.cook-nav .btn{min-height:62px;font-size:1.1rem}
+.tmr{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--tang-soft);border-radius:18px;padding:12px 14px;color:var(--tang-ink);font-weight:800}
+.tmr .v{font-family:var(--f-head);font-size:2rem}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:99px;font-weight:700;max-width:calc(100vw - 32px);box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.note{background:var(--tang-soft);color:var(--tang-ink);border-radius:16px;padding:10px 14px;font-weight:700;font-size:.92rem;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.note.good{background:var(--good-bg);color:var(--good)}
+.thumb{width:100%;max-height:180px;object-fit:cover;border-radius:16px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+  <header class="hdr"><div class="wrap hrow">
+    <button class="brand" data-act="go" data-id="home" aria-label="RasoiPop home">
+      <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true">
+        <circle class="l-b" cx="29" cy="12" r="7.5"/><circle class="l-b" cx="16" cy="15.500" r="3.200" opacity=".8"/><circle class="l-h" cx="26.500" cy="9.500" r="2"/>
+        <path class="l-s" d="M39 4.500l2-2.500M42.500 11h3M38 .8" stroke-width="2.200" stroke-linecap="round"/>
+        <path class="l-pot" d="M9 26h30v6a11 11 0 0 1-11 11h-8A11 11 0 0 1 9 32z"/>
+        <rect class="l-rim" x="6" y="22.500" width="36" height="5.500" rx="2.750"/>
+        <circle class="l-rim" cx="5.500" cy="32" r="2.800"/><circle class="l-rim" cx="42.500" cy="32" r="2.800"/>
+        <path d="M15 33c1 3 3 5 6 5.500" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>Rasoi<b>Pop</b></span></button>
+    <div class="hright"><span class="offpill" id="offPill" hidden>Offline</span>
+      <button class="avatar" id="avatar" data-act="settings" aria-label="Profile and settings">R</button></div>
+  </div></header>
+  <main class="wrap main" id="view"><div class="skeleton"></div></main>
+  <nav class="nav" aria-label="Main"><div class="wrap navin" id="nav"></div></nav>
+</div>
+<div id="ov"></div><div id="modal"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+/* ===== RasoiPop data: ingredient master + 44 vegetarian recipes ===== */
+const ING="potato:V:r;onion:V:o;tomato:V;green chilli:V;ginger:V:r;garlic:V:o;coriander leaves:V;curry leaves:V;mint leaves:V;lemon:V;carrot:V:r;green peas:V;cauliflower:V;cabbage:V;capsicum:V;french beans:V;spinach:V;fenugreek leaves:V;bottle gourd:V;brinjal:V;okra:V;cucumber:V;banana:V;apple:V;pomegranate:V;grapes:V;beetroot:V:r;radish:V:r;"+
+"curd:D:d;milk:D:d;paneer:D:d;ghee:D:d;butter:D:d;cream:D:d;cheese:D:d;"+
+"rice:G;poha:G;semolina:G:g;wheat flour:G:g;besan:G;bread:G:g;pav:G:g;sago:G;rice flour:G;"+
+"toor dal:P;moong dal:P;chickpeas:P;kidney beans:P;urad dal:P;chana dal:P;masoor dal:P;"+
+"cumin seeds:S;mustard seeds:S;turmeric powder:S;red chilli powder:S;coriander powder:S;garam masala:S;asafoetida:S;black pepper:S;cardamom:S;cinnamon:S;bay leaf:S;pav bhaji masala:S;chole masala:S;chaat masala:S;ajwain:S;sesame seeds:S:s;fenugreek seeds:S;fennel seeds:S;black salt:S;"+
+"sev:K;peanuts:K:p;"+
+"oil:O;salt:O;sugar:O;jaggery:O;water:O;eno fruit salt:O;coconut:O;cashews:O:n;almonds:O:n;raisins:O;tea leaves:O;tamarind:O";
+
+const RAW=[
+["poha","Poha","🥣","Maharashtrian","BS",10,12,2,"Easy","Fluffy flattened rice tossed with onion, peanuts and curry leaves. The quickest classic breakfast.",
+"200 g poha;1 onion;1 potato;30 g peanuts;1 green chilli;5 g curry leaves;1 tsp mustard seeds;0.5 tsp turmeric powder;2 tbsp oil;1 lemon;10 g coriander leaves;1 tsp salt",
+"Rinse the poha in a colander for 30 seconds, drain, then rest it 5 minutes with salt and turmeric until soft.@5|Heat oil in a kadhai, splutter the mustard seeds and fry the peanuts until golden.|Add curry leaves, green chilli and chopped onion. Saute until the onion turns translucent.@3|Add small diced potato with a splash of water, cover and cook until tender.@6|Fold in the poha gently and heat through on low.@2|Finish with lemon juice and coriander. Serve hot.","270/6/45/8"],
+["upma","Upma","🍚","South Indian","BS",10,15,2,"Easy","Savoury semolina porridge with mustard, curry leaves and vegetables.",
+"150 g semolina;1 onion;1 green chilli;5 g ginger;1 tbsp chana dal;1 tsp mustard seeds;5 g curry leaves;1 carrot;30 g green peas;2 tbsp oil;450 ml water;1 tsp salt;1 lemon",
+"Dry roast the semolina on medium heat until it smells nutty. Set aside.@4|Heat oil, add mustard seeds and chana dal and let the dal turn light golden.|Add curry leaves, chilli, ginger, onion, carrot and peas. Saute for a few minutes.@3|Pour in boiling water with salt and bring to a rolling boil.|Add semolina in a thin stream, stirring constantly so no lumps form.|Cover and steam on low heat.@3|Finish with lemon juice and serve hot.","240/6/38/7"],
+["idli","Idli","⚪","South Indian","BS",30,15,4,"Medium","Soft steamed rice and lentil cakes. Allow about 8 hours extra for soaking and fermenting.",
+"200 g rice;60 g urad dal;0.5 tsp fenugreek seeds;1 tsp salt;1 tbsp oil;300 ml water",
+"Soak the rice, and separately the urad dal with fenugreek seeds, for 5 hours.|Grind the dal to a fluffy batter and the rice to a fine rava texture. Mix with salt.|Ferment the batter in a warm place until it doubles, about 8 hours.|Grease the idli moulds and fill each with batter.|Steam on high heat until a toothpick comes out clean.@12|Rest 5 minutes, then unmould. Serve with sambar or chutney.@5","150/5/30/1"],
+["masala-dosa","Masala Dosa","🫓","South Indian","BD",35,25,3,"Medium","Crisp golden dosa wrapped around a spiced potato filling.",
+"200 g rice;60 g urad dal;0.5 tsp fenugreek seeds;3 potato;1 onion;1 tsp mustard seeds;5 g curry leaves;1 green chilli;0.5 tsp turmeric powder;3 tbsp oil;1 tsp salt",
+"Soak, grind and ferment the rice, dal and fenugreek into a batter as for idli. Add salt.|Boil, peel and roughly mash the potatoes.@15|Temper mustard seeds, curry leaves, chilli and sliced onion in oil. Add turmeric and the potatoes. Mix well for the filling.@5|Heat a tawa. Pour a ladle of batter and spread thin in a circle.|Drizzle oil around the edges and cook until crisp and golden.@3|Add the filling, fold and serve with chutney.","320/8/52/9"],
+["methi-thepla","Methi Thepla","🫓","Gujarati","BL",20,20,4,"Easy","Soft Gujarati flatbreads flavoured with fresh fenugreek. Great for travel.",
+"250 g wheat flour;100 g fenugreek leaves;2 tbsp besan;100 g curd;1 tsp sesame seeds;0.5 tsp ajwain;1 tsp red chilli powder;0.5 tsp turmeric powder;1 green chilli;3 tbsp oil;1 tsp salt",
+"Wash and finely chop the fenugreek leaves.|Mix flour, besan, spices, sesame, chopped leaves, curd and 1 tbsp oil. Knead a soft dough with a little water.|Rest the dough, covered.@10|Divide into balls and roll each into a thin round.|Cook on a hot tawa, brushing oil on both sides, until brown spots appear.@2|Serve with curd and pickle.","230/7/32/8"],
+["dudhi-thepla","Dudhi Thepla","🫓","Gujarati","BL",20,20,4,"Easy","Gujarati thepla made with grated bottle gourd for extra softness.",
+"250 g wheat flour;150 g bottle gourd;2 tbsp besan;0.5 tsp ajwain;1 tsp sesame seeds;1 tsp coriander powder;0.5 tsp turmeric powder;1 tsp red chilli powder;1 green chilli;3 tbsp oil;1 tsp salt",
+"Grate the bottle gourd and squeeze out only a little water.|Mix flour, besan, spices, sesame, gourd and 1 tbsp oil. Knead to a soft dough without adding water if possible.|Rest the dough.@10|Roll into thin rounds.|Cook on a hot tawa with oil until golden spots appear on both sides.@2|Serve with curd or chutney.","210/6/31/7"],
+["aloo-paratha","Aloo Paratha","🥙","Punjabi","BL",25,20,3,"Medium","Whole wheat flatbread stuffed with spiced mashed potato and cooked in ghee.",
+"300 g wheat flour;3 potato;1 green chilli;1 tsp coriander powder;1 tsp cumin seeds;0.5 tsp garam masala;10 g coriander leaves;1 tsp red chilli powder;2 tbsp ghee;1 tsp salt;150 ml water",
+"Knead flour with water and a pinch of salt into a soft dough. Rest it.@10|Boil, peel and mash the potatoes until smooth.@15|Mix in chopped chilli, coriander leaves, cumin, coriander powder, garam masala, chilli powder and salt.|Roll a dough ball, place a portion of filling in the centre, seal and roll out gently.|Cook on a hot tawa, applying ghee on both sides until golden and crisp.@3|Serve with curd, butter or pickle.","310/7/45/11"],
+["moong-chilla","Moong Dal Chilla","🥞","North Indian","BS",15,15,2,"Easy","Protein-rich savoury pancakes made from soaked moong dal and vegetables.",
+"150 g moong dal;1 onion;1 tomato;1 green chilli;5 g ginger;10 g coriander leaves;0.5 tsp cumin seeds;0.25 tsp asafoetida;1 tsp salt;2 tbsp oil;200 ml water",
+"Soak moong dal for 3 hours, then drain.@180|Grind with chilli, ginger and water to a smooth, pourable batter.|Stir in cumin, hing, salt, chopped onion, tomato and coriander.|Heat and lightly oil a tawa. Pour a ladle of batter and spread thin.|Cook until the edges lift, then flip.@2|Cook the other side and serve with green chutney.@2","220/14/30/5"],
+["veg-sandwich","Vegetable Sandwich","🥪","Other regional","BS",15,5,2,"Easy","Buttered bread layered with green chutney, potato and crisp vegetables.",
+"8 bread;2 tbsp butter;1 potato;1 cucumber;1 tomato;1 onion;20 g coriander leaves;10 g mint leaves;1 green chilli;1 tsp chaat masala;0.5 tsp salt",
+"Boil the potato until soft, cool and slice thin.@12|Blend coriander, mint, chilli and salt with a splash of water into a green chutney.|Slice cucumber, tomato and onion thinly.|Butter the bread slices and spread chutney on one side.|Layer potato, cucumber, tomato and onion and sprinkle chaat masala.|Close the sandwich, toast on a tawa or grill until crisp and cut diagonally.@4","280/8/42/9"],
+["dhokla","Dhokla","🟨","Gujarati","BST",25,15,4,"Easy","Spongy steamed savoury cake from semolina and curd, finished with a mustard tempering.",
+"150 g semolina;100 g curd;1 tsp eno fruit salt;5 g ginger;1 green chilli;1 tsp sugar;1 tsp salt;1 tbsp oil;1 tsp mustard seeds;5 g curry leaves;1 tbsp sesame seeds;10 g coriander leaves;150 ml water",
+"Mix semolina, curd and water into a thick batter. Rest.@15|Add ginger-chilli paste, salt and sugar.|Grease a steaming plate and boil water in a steamer.|Add eno with a teaspoon of water to the batter and fold gently. Pour into the plate at once.|Steam on high heat until set.@15|Heat oil, splutter mustard and sesame with curry leaves, add a little water and pour over. Cut and garnish with coriander.","180/6/28/5"],
+["khaman","Khaman","🟡","Gujarati","BST",15,15,4,"Easy","Light, airy besan cakes with a tangy-sweet tempering. A Surat favourite.",
+"150 g besan;1 lemon;1 tbsp sugar;1 tsp eno fruit salt;5 g ginger;1 green chilli;1 tsp salt;1 tsp mustard seeds;5 g curry leaves;2 tbsp oil;20 g coconut;10 g coriander leaves;200 ml water",
+"Whisk besan with water, ginger-chilli paste, salt, half the sugar, lemon juice and 1 tbsp oil into a lump-free batter. Rest.@10|Boil water in a steamer and grease a plate.|Fold in the eno and pour the batter immediately.|Steam until a toothpick comes out clean.@12|Cool slightly, crumble or cut into pieces.|Temper oil with mustard and curry leaves, add sugar and a little water, pour over. Top with coconut and coriander.","190/8/22/7"],
+["khandvi","Khandvi","🌀","Gujarati","ST",15,15,4,"Medium","Silky besan rolls set thin and tempered with mustard, sesame and coconut.",
+"100 g besan;150 g curd;250 ml water;0.5 tsp turmeric powder;5 g ginger;1 green chilli;1 tsp salt;1 tsp mustard seeds;1 tsp sesame seeds;5 g curry leaves;2 tbsp oil;20 g coconut;10 g coriander leaves;0.25 tsp asafoetida",
+"Whisk besan with curd, water, turmeric, ginger-chilli paste and salt until completely smooth.|Cook on low heat, stirring non-stop, until it thickens and leaves the sides.@10|Spread thinly on greased steel plates or the back of a thali, working fast.|Cool for a few minutes, then cut into strips.@5|Roll each strip tightly and arrange on a plate.|Temper oil with mustard, sesame, hing and curry leaves. Pour over and garnish with coconut and coriander.","170/7/17/8"],
+["handvo","Handvo","🍰","Gujarati","LDS",30,35,4,"Medium","Savoury baked lentil and rice cake with bottle gourd and a crunchy sesame top.",
+"100 g rice;50 g toor dal;30 g chana dal;30 g urad dal;150 g bottle gourd;100 g curd;5 g ginger;2 green chilli;1 tbsp sesame seeds;1 tsp mustard seeds;0.5 tsp turmeric powder;1 tsp eno fruit salt;3 tbsp oil;1 tsp salt;5 g curry leaves;1 tsp sugar",
+"Soak rice and the three dals for 5 hours, then grind coarsely with curd. Ferment about 8 hours.|Add grated gourd, ginger, chilli, turmeric, salt, sugar and 1 tbsp oil. Fold in eno just before cooking.|Heat oil in a heavy pan, splutter mustard, sesame and curry leaves.|Pour in the batter, cover and cook on low heat.@15|Flip carefully and cook the other side until golden.@15|Rest 5 minutes, cut into wedges and serve with chutney.","280/10/35/11"],
+["paneer-bhurji","Paneer Bhurji","🧀","Punjabi","BLDS",10,12,3,"Easy","Scrambled paneer cooked with onion, tomato and warm spices.",
+"250 g paneer;2 onion;2 tomato;1 green chilli;5 g ginger;1 tsp cumin seeds;0.5 tsp turmeric powder;1 tsp coriander powder;0.5 tsp garam masala;1 tsp red chilli powder;2 tbsp oil;10 g coriander leaves;1 tsp salt",
+"Crumble the paneer coarsely.|Heat oil, crackle the cumin, then add ginger, chilli and chopped onion. Cook until golden.@4|Add tomatoes and all the spices. Cook until the oil separates.@4|Add paneer and salt and toss gently.@3|Finish with garam masala and coriander. Serve with roti or bread.","290/16/9/21"],
+["pav-bhaji","Pav Bhaji","🍞","Maharashtrian","DS",20,30,4,"Medium","Buttery mashed vegetable curry with pav bhaji masala, served with toasted buns.",
+"8 pav;3 potato;150 g cauliflower;50 g green peas;1 carrot;2 onion;3 tomato;1 capsicum;2 tbsp pav bhaji masala;1 tsp red chilli powder;0.5 tsp turmeric powder;3 tbsp butter;5 g ginger;10 g garlic;10 g coriander leaves;1 lemon;1 tsp salt",
+"Boil potatoes, cauliflower, peas and carrot until very soft.@15|Heat 2 tbsp butter, saute ginger, garlic and onion until golden.@5|Add capsicum and tomatoes and cook down to a pulp.@6|Add the masalas, then the boiled vegetables. Mash well in the pan with a masher.|Simmer with a little water and salt until thick.@10|Toast pav in butter on a tawa. Top the bhaji with butter, onion, coriander and lemon.","430/11/58/17"],
+["fruit-chaat","Fruit Chaat","🍎","Other regional","SV",10,0,2,"Easy","Fresh seasonal fruit tossed with chaat masala, black salt and lemon.",
+"1 apple;2 banana;100 g pomegranate;150 g grapes;1 lemon;1 tsp chaat masala;0.25 tsp black pepper;0.5 tsp black salt;10 g mint leaves",
+"Wash and chop apple and banana into bite-sized pieces.|Add pomegranate seeds and halved grapes.|Squeeze lemon over the fruit to stop browning.|Sprinkle chaat masala, black salt and pepper. Toss gently.|Garnish with mint and serve immediately.","150/2/36/1"],
+["hara-bhara-kabab","Hara Bhara Kabab","🟢","North Indian","ST",20,15,3,"Medium","Shallow-fried spinach, pea and potato patties with warm spices.",
+"200 g spinach;2 potato;100 g green peas;2 tbsp besan;1 green chilli;5 g ginger;1 tsp coriander powder;0.5 tsp garam masala;1 tsp chaat masala;3 tbsp oil;1 tsp salt",
+"Blanch the spinach for a minute, squeeze out all water and chop finely.@2|Boil and mash the potatoes with the peas.@15|Mix spinach, mash, besan, chilli, ginger, spices and salt into a firm dough.|Shape into flat patties.|Shallow fry in oil until crisp and golden on both sides.@8|Serve with mint chutney.","220/7/25/11"],
+["paneer-tikka","Paneer Tikka","🍢","Punjabi","ST",15,12,3,"Medium","Marinated paneer and capsicum cooked on a hot griddle until charred.",
+"250 g paneer;1 capsicum;1 onion;100 g curd;1 tsp red chilli powder;1 tsp coriander powder;0.5 tsp garam masala;0.5 tsp ajwain;5 g ginger;5 g garlic;1 tbsp besan;2 tbsp oil;1 lemon;1 tsp chaat masala;1 tsp salt",
+"Mix curd, besan, spices, ginger-garlic, salt and 1 tbsp oil into a thick marinade.|Cube the paneer, capsicum and onion and coat well. Marinate.@30|Thread onto skewers.|Cook on a hot greased tawa or grill, turning until charred in spots.@10|Sprinkle chaat masala and lemon juice. Serve with mint chutney.","290/16/10/21"],
+["dal-tadka","Dal Tadka","🍲","Punjabi","LD",10,30,3,"Easy","Comforting yellow dal finished with a sizzling ghee and cumin tadka.",
+"150 g toor dal;1 onion;2 tomato;1 green chilli;5 g ginger;5 g garlic;1 tsp cumin seeds;0.25 tsp asafoetida;0.5 tsp turmeric powder;1 tsp red chilli powder;2 tbsp ghee;10 g coriander leaves;1 tsp salt;700 ml water",
+"Wash the dal and pressure cook with turmeric, salt and water.@15|Mash the cooked dal lightly.|Heat 1 tbsp ghee, cook onion, ginger, garlic and chilli until golden.@5|Add tomatoes and cook until soft. Pour in the dal and simmer.@8|For the tadka, heat remaining ghee, crackle cumin and hing, add chilli powder and pour over the dal.|Garnish with coriander. Serve with rice or roti.","260/13/34/8"],
+["gujarati-kadhi","Gujarati Kadhi","🥛","Gujarati","LD",10,20,3,"Easy","Thin, sweet-sour yoghurt soup thickened with besan and tempered in ghee.",
+"250 g curd;3 tbsp besan;600 ml water;2 tsp sugar;5 g ginger;2 green chilli;1 tsp mustard seeds;1 tsp cumin seeds;5 g curry leaves;0.25 tsp asafoetida;1 tbsp ghee;0.5 tsp turmeric powder;1 tsp salt;10 g coriander leaves",
+"Whisk curd, besan, water, turmeric and salt until completely smooth.|Pour into a pot and bring to a boil on medium heat, stirring often.@5|Add ginger, chilli and sugar. Simmer on low until slightly thick.@15|Heat ghee, add mustard, cumin, hing and curry leaves.|Pour the tempering over the kadhi and garnish with coriander.|Serve with khichdi or rice.","150/7/14/7"],
+["khichdi","Khichdi","🍲","Gujarati","LD",10,25,3,"Easy","Gentle rice and moong dal khichdi, finished with ghee. Perfect comfort food.",
+"100 g rice;100 g moong dal;1 tsp cumin seeds;0.25 tsp asafoetida;0.5 tsp turmeric powder;2 tbsp ghee;1 tsp salt;800 ml water;1 green chilli",
+"Wash the rice and dal together and soak briefly.@15|Heat 1 tbsp ghee in a pressure cooker, crackle cumin, add hing and chilli.|Add the rice-dal, turmeric, salt and water.|Pressure cook for 3 whistles and let the steam release.@12|Mash lightly and top with the remaining ghee. Serve with kadhi or papad.","330/12/52/8"],
+["masala-khichdi","Masala Khichdi","🍛","Maharashtrian","LD",15,30,3,"Easy","Vegetable-packed spiced khichdi, a full one-pot meal.",
+"100 g rice;100 g moong dal;1 onion;1 tomato;1 carrot;50 g green peas;50 g cauliflower;1 tsp cumin seeds;1 tsp garam masala;0.5 tsp turmeric powder;1 tsp red chilli powder;5 g ginger;2 tbsp ghee;1 tsp salt;900 ml water;1 bay leaf",
+"Wash and soak the rice and dal.@15|Heat ghee, add bay leaf and cumin, then onion and ginger. Saute until golden.@4|Add tomato, carrot, peas, cauliflower and all spices. Cook briefly.@3|Add the rice-dal, salt and water. Pressure cook for 3 whistles.@12|Let the steam release, stir and serve with curd and papad.","360/13/55/9"],
+["chole","Chole","🫘","Punjabi","LD",15,45,4,"Medium","Slow-simmered spiced chickpeas in an onion-tomato masala.",
+"200 g chickpeas;2 onion;3 tomato;10 g ginger;10 g garlic;2 green chilli;2 tbsp chole masala;1 tsp cumin seeds;1 tsp coriander powder;0.5 tsp turmeric powder;1 tsp red chilli powder;3 tbsp oil;1 bay leaf;10 g coriander leaves;1 tsp salt;800 ml water",
+"Soak the chickpeas overnight and drain.|Pressure cook with salt and water until soft.@25|Heat oil, crackle cumin and bay leaf, then add onion, ginger, garlic and chilli. Cook until deep golden.@8|Add tomatoes and the spices. Cook until oil separates.@6|Add the chickpeas with some cooking water and simmer so the masala coats them.@15|Garnish with coriander. Serve with bhature, rice or roti.","340/14/48/10"],
+["rajma","Rajma","❤️","Punjabi","LD",15,50,4,"Medium","Creamy kidney beans in a thick tomato gravy. Weekend comfort with rice.",
+"200 g kidney beans;2 onion;3 tomato;10 g ginger;10 g garlic;1 green chilli;1 tsp cumin seeds;2 tsp coriander powder;1 tsp garam masala;1 tsp red chilli powder;0.5 tsp turmeric powder;2 tbsp ghee;10 g coriander leaves;1 tsp salt;900 ml water;1 bay leaf",
+"Soak the rajma overnight and drain.|Pressure cook with salt and water until completely soft.@30|Heat ghee, add cumin and bay leaf, then onion, ginger, garlic and chilli. Cook until golden.@8|Add tomatoes and spices and cook to a thick masala.@8|Add the rajma with its liquid, mash a few beans and simmer.@15|Finish with garam masala and coriander. Serve with steamed rice.","330/15/50/8"],
+["veg-pulao","Vegetable Pulao","🍚","North Indian","LD",15,25,3,"Easy","Fragrant basmati rice cooked with whole spices and vegetables.",
+"200 g rice;1 onion;1 carrot;60 g french beans;60 g green peas;1 potato;1 tsp cumin seeds;1 bay leaf;2 cardamom;1 cinnamon;1 tsp garam masala;5 g ginger;1 green chilli;2 tbsp ghee;1 tsp salt;400 ml water;10 g mint leaves",
+"Wash the rice and soak it.@20|Heat ghee, add cumin, bay leaf, cardamom and cinnamon.|Add onion, ginger and chilli and fry until golden.@4|Add chopped vegetables, garam masala and salt. Saute briefly.@3|Add the drained rice and water. Bring to a boil.|Cover and cook on the lowest heat until the water is absorbed.@15|Rest 5 minutes, fluff with mint and serve with raita.","320/7/58/8"],
+["curd-rice","Curd Rice","🍚","South Indian","LD",10,15,2,"Easy","Cooling, creamy South Indian curd rice with a mustard tempering.",
+"150 g rice;250 g curd;100 ml milk;1 tsp mustard seeds;1 tsp urad dal;5 g ginger;1 green chilli;5 g curry leaves;0.25 tsp asafoetida;1 tbsp oil;1 tsp salt;10 g coriander leaves",
+"Cook the rice until soft and mushy. Mash while hot.@20|Cool it completely, then mix in curd, milk and salt.|Heat oil, splutter mustard, add urad dal until golden.|Add ginger, chilli, hing and curry leaves.|Pour the tempering over the rice and mix.|Garnish with coriander. Serve with pickle or papad.","320/10/50/8"],
+["aloo-jeera","Aloo Jeera","🥔","North Indian","LD",10,20,3,"Easy","Dry potato sabzi with a generous cumin tempering. Goes with everything.",
+"4 potato;2 tsp cumin seeds;1 green chilli;0.5 tsp turmeric powder;1 tsp coriander powder;0.5 tsp red chilli powder;1 lemon;10 g coriander leaves;3 tbsp oil;1 tsp salt",
+"Boil the potatoes, peel and cube them.@15|Heat oil and crackle the cumin seeds.|Add green chilli and turmeric, then the potatoes.|Sprinkle coriander powder, chilli powder and salt. Toss on medium heat until lightly crisp.@5|Finish with lemon juice and coriander.","230/4/36/9"],
+["aloo-gobi","Aloo Gobi","🥦","Punjabi","LD",15,25,3,"Easy","Dry-style potato and cauliflower sabzi with onion-tomato masala.",
+"2 potato;300 g cauliflower;1 onion;2 tomato;5 g ginger;1 green chilli;1 tsp cumin seeds;0.5 tsp turmeric powder;1 tsp coriander powder;0.5 tsp garam masala;1 tsp red chilli powder;3 tbsp oil;10 g coriander leaves;1 tsp salt",
+"Cut potato and cauliflower into medium pieces.|Heat oil, crackle cumin, add ginger, chilli and onion. Cook until golden.@5|Add tomatoes and spices and cook to a masala.@5|Add potato and cauliflower with salt. Mix well.|Cover and cook on low heat, stirring occasionally, until tender.@15|Finish with garam masala and coriander.","210/5/26/10"],
+["palak-paneer","Palak Paneer","🥬","Punjabi","LD",15,20,3,"Medium","Paneer cubes in a smooth, silky spinach gravy.",
+"300 g spinach;200 g paneer;1 onion;2 tomato;5 g ginger;5 g garlic;2 green chilli;1 tsp cumin seeds;0.5 tsp garam masala;1 tsp coriander powder;1 tbsp butter;1 tbsp oil;30 ml cream;1 tsp salt",
+"Blanch spinach for 2 minutes, then plunge into cold water. Blend with chilli to a puree.@2|Heat butter and oil, crackle cumin, add ginger, garlic and onion. Cook until golden.@5|Add tomatoes and spices and cook until soft.@5|Pour in the spinach puree and salt and simmer gently.@5|Add paneer cubes and cook briefly.@3|Swirl in the cream and serve with roti.","300/15/12/21"],
+["bhindi-masala","Bhindi Masala","🌿","North Indian","LD",15,20,3,"Easy","Crisp okra stir-fried with onion, tomato and dry masalas.",
+"300 g okra;2 onion;2 tomato;1 tsp cumin seeds;0.5 tsp turmeric powder;1 tsp coriander powder;1 tsp red chilli powder;0.5 tsp garam masala;1 lemon;3 tbsp oil;1 tsp salt",
+"Wash and thoroughly dry the okra, then cut into pieces.|Fry the okra in oil until no longer sticky. Remove.@8|In the same pan, crackle cumin and cook onion until golden.@5|Add tomato and spices and cook to a masala.@4|Return the okra with salt and toss on low heat.@4|Finish with garam masala and lemon.","180/4/16/11"],
+["baingan-bharta","Baingan Bharta","🍆","Punjabi","LD",15,25,3,"Medium","Smoky roasted brinjal mashed with onion, tomato and spices.",
+"2 brinjal;1 onion;2 tomato;50 g green peas;5 g ginger;5 g garlic;2 green chilli;1 tsp cumin seeds;0.5 tsp turmeric powder;1 tsp coriander powder;1 tsp red chilli powder;0.5 tsp garam masala;3 tbsp oil;10 g coriander leaves;1 tsp salt",
+"Rub the brinjals with oil and roast directly over a flame, turning, until the skin is charred and the flesh collapses.@10|Peel, discard the skin and mash the flesh.|Heat oil, crackle cumin, add ginger, garlic, chilli and onion. Cook until golden.@5|Add tomatoes, peas and spices. Cook until soft.@6|Add the mashed brinjal and salt and cook until the oil separates.@6|Garnish with coriander. Serve with roti.","190/4/17/12"],
+["sev-tameta","Sev Tameta","🍅","Gujarati","LD",10,15,3,"Easy","Tangy-sweet Gujarati tomato curry finished with crunchy sev. No onion or garlic.",
+"4 tomato;100 g sev;1 tsp mustard seeds;1 tsp cumin seeds;0.25 tsp asafoetida;0.5 tsp turmeric powder;1 tsp red chilli powder;1 tsp coriander powder;1 tsp sugar;2 green chilli;3 tbsp oil;10 g coriander leaves;1 tsp salt",
+"Chop the tomatoes roughly.|Heat oil, splutter mustard and cumin, then add hing and green chilli.|Add turmeric, chilli powder and coriander powder, then the tomatoes.|Add salt and sugar. Cover and cook until the tomatoes turn soft.@8|Add a splash of water to make a light gravy and simmer.@4|Top with sev just before serving and garnish with coriander.","260/7/30/13"],
+["gatte-ki-sabzi","Gatte ki Sabzi","🥘","Rajasthani","LD",25,25,3,"Medium","Rajasthani besan dumplings simmered in a spiced curd gravy.",
+"150 g besan;200 g curd;0.5 tsp ajwain;1 tsp cumin seeds;0.25 tsp asafoetida;1 tsp coriander powder;1 tsp red chilli powder;0.5 tsp turmeric powder;3 tbsp oil;1 tbsp ghee;5 g ginger;2 green chilli;1 tsp salt;500 ml water",
+"Knead besan with ajwain, chilli powder, salt, ghee and a little water into a firm dough.|Roll into logs and boil in water until they float.@10|Cut the boiled logs into discs and keep the water.|Heat oil, add cumin, hing, ginger and chilli. Add whisked curd with turmeric and coriander powder, stirring constantly.@5|Add the gatte and some of the reserved water. Simmer into a gravy.@10|Serve with rice or roti.","330/13/28/18"],
+["cholar-dal","Cholar Dal","🥥","Bengali","LD",10,35,3,"Easy","Mildly sweet Bengali chana dal with coconut slivers and whole spices.",
+"150 g chana dal;30 g coconut;1 bay leaf;1 cinnamon;2 cardamom;1 tsp cumin seeds;5 g ginger;0.5 tsp turmeric powder;1 tsp sugar;2 tbsp ghee;1 green chilli;1 tsp salt;600 ml water",
+"Wash and soak the dal for an hour.@60|Pressure cook with turmeric, salt and water until soft but whole.@20|Fry coconut slivers in a little ghee until golden. Set aside.|Heat the remaining ghee with bay leaf, cinnamon, cardamom and cumin.|Add ginger and chilli, then pour in the dal. Add sugar and simmer.@8|Top with the fried coconut and serve with luchi or rice.","300/13/40/10"],
+["lauki-muthia","Lauki Muthia","🥒","Jain","BSL",20,25,3,"Medium","Steamed bottle gourd dumplings tossed in mustard and sesame. Jain-friendly.",
+"200 g bottle gourd;100 g wheat flour;60 g besan;30 g semolina;1 tsp sugar;1 green chilli;1 tbsp sesame seeds;0.5 tsp turmeric powder;1 tsp coriander powder;1 lemon;3 tbsp oil;1 tsp mustard seeds;5 g curry leaves;1 tsp salt",
+"Grate the bottle gourd. Mix with flours, semolina, spices, chilli, sugar, lemon and 1 tbsp oil into a soft dough.|Shape into long logs.|Steam until firm and a knife comes out clean.@20|Cool, then slice into rounds.|Heat oil, splutter mustard and sesame with curry leaves.|Toss the muthia in the tempering until lightly crisp.@3","240/8/33/8"],
+["sabudana-khichdi","Sabudana Khichdi","⚪","Maharashtrian","FB",15,15,3,"Medium","Fasting-day favourite of pearl sago, peanuts and potato.",
+"150 g sago;2 potato;40 g peanuts;2 green chilli;1 tsp cumin seeds;2 tbsp ghee;1 lemon;10 g coriander leaves;1 tsp salt;1 tsp sugar",
+"Wash the sago until the water runs clear. Drain and soak with just enough water to cover, about 5 hours, until each pearl squashes easily.|Dry roast the peanuts and crush coarsely.@4|Heat ghee, crackle cumin, add chillies and diced potato. Cook until tender.@8|Add the sago, peanuts, salt and sugar. Toss gently on low heat until translucent.@5|Finish with lemon juice and coriander.","380/6/62/12"],
+["shrikhand","Shrikhand","🍮","Gujarati","WF",15,0,4,"Easy","Sweet hung-curd dessert flavoured with cardamom and nuts.",
+"500 g curd;80 g sugar;3 cardamom;15 g almonds",
+"Hang the curd in a muslin cloth for about 5 hours until thick and creamy.|Transfer to a bowl and whisk with powdered sugar until smooth and sugar dissolves.|Crush the cardamom seeds and stir in.|Chill for at least an hour.@60|Serve topped with sliced almonds.","260/9/36/9"],
+["sooji-halwa","Sooji Halwa","🍯","North Indian","WF",5,20,4,"Easy","Golden semolina halwa roasted in ghee. Ready in 25 minutes.",
+"100 g semolina;4 tbsp ghee;80 g sugar;300 ml milk;2 cardamom;20 g cashews;20 g raisins",
+"Heat ghee and fry cashews and raisins briefly. Remove.|In the same ghee roast the semolina on low heat until fragrant and golden.@8|Meanwhile, warm the milk with sugar and cardamom.|Pour the hot milk into the semolina carefully while stirring and it will sputter.|Cook until it thickens and leaves the sides.@4|Garnish with the nuts and serve hot.","330/6/42/16"],
+["rice-kheer","Rice Kheer","🥣","North Indian","WF",10,50,4,"Easy","Slow-simmered milk and rice pudding scented with cardamom.",
+"1000 ml milk;60 g rice;80 g sugar;3 cardamom;20 g almonds;20 g raisins;1 tbsp ghee",
+"Wash the rice, soak for 20 minutes and drain. Fry lightly in ghee.@20|Bring the milk to a boil in a heavy pot.|Add the rice and simmer on low heat, stirring often, until very soft and the milk reduces.@40|Add sugar, cardamom, almonds and raisins.|Simmer a few more minutes. Serve warm or chilled.@5","310/9/44/11"],
+["besan-ladoo","Besan Ladoo","🟠","North Indian","WF",10,25,8,"Medium","Melt-in-the-mouth roasted gram flour ladoos. A festive staple.",
+"250 g besan;125 g ghee;125 g sugar;3 cardamom;20 g almonds",
+"Heat ghee in a heavy pan and add the besan.|Roast on low heat, stirring constantly, until golden and aromatic.@20|Cool the mixture for 10 minutes.@10|Mix in powdered sugar, crushed cardamom and chopped almonds.|Shape into round ladoos while still warm.","280/6/28/16"],
+["masala-chai","Masala Chai","☕","North Indian","V",3,7,2,"Easy","Strong Indian tea simmered with ginger and cardamom.",
+"2 tsp tea leaves;300 ml milk;200 ml water;2 tsp sugar;5 g ginger;2 cardamom",
+"Boil water with crushed ginger and cardamom.|Add tea leaves and simmer until dark.@2|Pour in the milk and sugar and bring to a boil.@3|Let it rise twice, then strain and serve hot.","110/4/14/4"],
+["sweet-lassi","Sweet Lassi","🥤","Punjabi","V",5,0,2,"Easy","Thick, chilled Punjabi lassi with cardamom and almonds.",
+"250 g curd;100 ml milk;3 tbsp sugar;2 cardamom;10 g almonds",
+"Add chilled curd, milk, sugar and crushed cardamom to a blender.|Blend until frothy and smooth.|Pour into tall glasses and top with chopped almonds.","210/8/30/6"],
+["thandai","Thandai","🥛","North Indian","VF",15,5,3,"Easy","Festive spiced almond milk. Chill before serving.",
+"500 ml milk;15 g almonds;15 g cashews;1 tsp fennel seeds;4 cardamom;0.25 tsp black pepper;3 tbsp sugar",
+"Soak almonds, cashews and fennel in warm water for 30 minutes.@30|Grind with cardamom and pepper to a fine paste.|Simmer milk with sugar for a few minutes.@5|Stir in the paste, strain if you like and chill.|Serve cold.","230/8/28/10"],
+["phulka-roti","Phulka Roti","🫓","North Indian","LD",10,15,4,"Easy","Soft puffed whole wheat rotis, the everyday bread.",
+"250 g wheat flour;150 ml water;1 tsp salt;1 tbsp ghee",
+"Knead flour, water and salt into a soft dough. Rest, covered.@15|Divide into 8 balls and roll each into a thin round.|Cook on a hot tawa for a few seconds on each side.|Puff the roti directly on an open flame for a moment.|Brush with ghee and keep wrapped in a cloth.","160/5/28/3"]
+];
+
+const SOUR=0;
+(()=>{'use strict';
+/* ===== RasoiPop engine ===== */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):'';
+const todayD=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const iso=d=>{const z=new Date(d);return z.getFullYear()+'-'+String(z.getMonth()+1).padStart(2,'0')+'-'+String(z.getDate()).padStart(2,'0')};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const daysUntil=s=>Math.round((new Date(s+'T00:00:00')-todayD())/864e5);
+const hash=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
+
+/* ---- storage (localStorage, with in-memory fallback) ---- */
+let persistOK=true;const mem={};
+function load(k,d){try{const v=localStorage.getItem('rasoipop:'+k);if(v!==null)return JSON.parse(v)}catch(e){persistOK=false}return k in mem?mem[k]:d}
+function put(k,v){mem[k]=v;try{localStorage.setItem('rasoipop:'+k,JSON.stringify(v))}catch(e){persistOK=false}}
+const S={profile:load('profile',null),pantry:load('pantry',null),plan:load('plan',{}),shop:load('shop',[]),favs:load('favs',[]),cols:load('cols',[]),mine:load('mine',[]),notes:load('notes',{}),photos:load('photos',{}),autoPantry:load('autoPantry',true)};
+const save=(...ks)=>ks.forEach(k=>put(k,S[k]));
+
+/* ---- ingredient master ---- */
+const M={};ING.split(';').forEach(s=>{const[n,g,f]=s.split(':');M[n]={g,f:f||''}});
+const GROUPS=[['V','Vegetables & Fruits'],['D','Dairy'],['G','Grains & Flour'],['P','Pulses & Lentils'],['S','Spices & Masalas'],['K','Snacks'],['O','Other Essentials']];
+const ALIAS={atta:'wheat flour','gram flour':'besan',dahi:'curd',yogurt:'curd',yoghurt:'curd',coriander:'coriander leaves',cilantro:'coriander leaves',dhania:'coriander leaves',jeera:'cumin seeds',cumin:'cumin seeds',haldi:'turmeric powder',turmeric:'turmeric powder','red chilli':'red chilli powder','chilli powder':'red chilli powder','green chili':'green chilli',chilli:'green chilli',chili:'green chilli',mustard:'mustard seeds',rai:'mustard seeds',sooji:'semolina',rava:'semolina',suji:'semolina',toor:'toor dal','arhar dal':'toor dal',chana:'chickpeas','kabuli chana':'chickpeas',rajma:'kidney beans',sabudana:'sago','cooking oil':'oil',lauki:'bottle gourd',dudhi:'bottle gourd',bhindi:'okra',baingan:'brinjal',eggplant:'brinjal',methi:'fenugreek leaves',palak:'spinach',matar:'green peas',peas:'green peas',gobi:'cauliflower',gur:'jaggery',elaichi:'cardamom',hing:'asafoetida','curry leaf':'curry leaves',mint:'mint leaves','coriander seeds':'coriander powder',tea:'tea leaves','chai patti':'tea leaves',badam:'almonds',kaju:'cashews',nariyal:'coconut',namak:'salt',cheeni:'sugar',paani:'water',chawal:'rice',ghi:'ghee',makhan:'butter',doodh:'milk',malai:'cream',nimbu:'lemon',adrak:'ginger',lehsun:'garlic',pyaz:'onion',tamatar:'tomato',aloo:'potato',gajar:'carrot','shimla mirch':'capsicum',shimla:'capsicum',moongfali:'peanuts',groundnut:'peanuts','pav bun':'pav'};
+function norm(s){s=String(s||'').toLowerCase().trim().replace(/\s+/g,' ');if(M[s])return s;if(ALIAS[s])return ALIAS[s];let t=s.replace(/ies$/,'y');if(M[t])return t;t=s.replace(/es$/,'');if(M[t])return t;t=s.replace(/s$/,'');if(M[t])return t;return ALIAS[t]||s}
+const grp=n=>M[n]?M[n].g:'O';
+const flag=(n,c)=>(M[n]?M[n].f:'').includes(c);
+const STAPLES=['salt','water','oil','turmeric powder','red chilli powder'];
+const isStaple=n=>S.profile?.staples!==false&&STAPLES.includes(n);
+const LIQ=new Set(['milk','water','oil','cream']);
+const PCSW={potato:150,onion:120,tomato:100,carrot:80,brinjal:300,capsicum:150,cucumber:200,apple:180};
+
+/* ---- units ---- */
+const UNITS=['kg','g','l','ml','pcs','packet','tsp','tbsp'];
+const UALIAS={gm:'g',gms:'g',gram:'g',grams:'g',kgs:'kg',litre:'l',liter:'l',litres:'l',liters:'l',pc:'pcs',piece:'pcs',pieces:'pcs',teaspoon:'tsp',tablespoon:'tbsp',packets:'packet',pkt:'packet'};
+function parseIng(line){const t=String(line).trim().split(/\s+/);if(!t[0])return null;let q;const a=t[0];if(/^\d+\/\d+$/.test(a)){const[x,y]=a.split('/');q=+x/+y}else q=parseFloat(a);if(!isFinite(q)||q<=0)return null;let u='pcs',rest=t.slice(1);if(rest[0]){const w=rest[0].toLowerCase();const uu=UALIAS[w]||w;if(UNITS.includes(uu)){u=uu;rest=rest.slice(1)}}const n=rest.join(' ').trim();if(!n)return null;return{q,u,n:n.toLowerCase()}}
+function toBase(q,u,n){if(u==='kg')return[q*1000,'w'];if(u==='g'||u==='ml')return[q,'w'];if(u==='l')return[q*1000,'w'];if(u==='tsp'||u==='tbsp'){const g=grp(n);const per=g==='S'?3:(g==='O'||g==='D')?5:4;return[q*per*(u==='tbsp'?3:1),'w']}if(PCSW[n]&&u==='pcs')return[q*PCSW[n],'w'];return[q,'c']}
+const pBase=p=>toBase(+p.qty||0,p.unit,norm(p.name));
+
+/* ---- recipes ---- */
+function build(r){const ing=r.ing.map(i=>({...i}));const names=ing.map(i=>norm(i.n));
+  const dairy=names.some(n=>flag(n,'d')),nog=!names.some(n=>flag(n,'o')),root=names.some(n=>flag(n,'r'));
+  let fat=0;ing.forEach(i=>{const n=norm(i.n);if(['oil','ghee','butter'].includes(n))fat+=toBase(i.q,i.u,n)[0]});
+  const tags=[];if(nog&&!root)tags.push('jain');if(!dairy)tags.push('vegan');if(nog)tags.push('nog');if(r.nut&&r.nut[1]>=12)tags.push('hp');if(fat/r.sv<=15)tags.push('lo');if(!names.some(n=>flag(n,'g')))tags.push('gf');
+  return{...r,ing,names,tags,mine:!!r.mine}}
+const BASE=RAW.map(a=>{const[id,name,e,cuisine,cats,pt,ct,sv,diff,desc,ings,steps,nut]=a;return build({id,name,e,cuisine,cats:cats.split(''),pt,ct,sv,diff,desc,nut:nut.split('/').map(Number),
+  ing:ings.split(';').map(parseIng).filter(Boolean),steps:steps.split('|').map(s=>{const m=s.match(/@(\d+)\s*$/);return m?{t:s.replace(/@\d+\s*$/,'').trim(),m:+m[1]}:{t:s.trim()}})})});
+const CATS=[['B','Breakfast'],['L','Lunch'],['D','Dinner'],['S','Snacks'],['T','Starters'],['W','Sweets & Desserts'],['V','Beverages'],['F','Festive Specials']];
+const CUIS=['Gujarati','Punjabi','South Indian','Maharashtrian','Rajasthani','Bengali','North Indian','Jain','Other regional'];
+const SLOTS=[['B','Breakfast'],['L','Lunch'],['S','Evening snacks'],['D','Dinner']];
+const DIETS=[['veg','Vegetarian'],['jain','Jain'],['vegan','Vegan'],['nog','No onion-garlic'],['hp','High protein'],['lo','Low oil'],['gf','Gluten-free'],['quick','Under 20 min']];
+const TAGLABEL={jain:'Jain',vegan:'Vegan',nog:'No onion-garlic',hp:'High protein',lo:'Low oil',gf:'Gluten-free',quick:'Quick'};
+const allRecipes=()=>[...BASE,...S.mine.map(build)];
+const getR=id=>allRecipes().find(r=>r.id===id);
+const fitsSlot=(r,s)=>s==='S'?r.cats.some(c=>'STV'.includes(c)):r.cats.includes(s);
+const total=r=>r.pt+r.ct;
+const hue=r=>[28,40,95,120,18,50,110,35][hash(r.id)%8];
+const allergenFlag={dairy:'d',gluten:'g',nuts:'n',peanuts:'p',sesame:'s'};
+function passes(r){const P=S.profile;if(!P)return true;
+  if(P.jain&&!r.tags.includes('jain'))return false;if(P.nog&&!r.tags.includes('nog'))return false;
+  if((P.diet||[]).includes('vegan')&&!r.tags.includes('vegan'))return false;if((P.diet||[]).includes('gf')&&!r.tags.includes('gf'))return false;
+  for(const a of P.allergies||[]){const f=allergenFlag[a];if(f){if(r.names.some(n=>flag(n,f)))return false}else if(r.names.some(n=>n.includes(a.toLowerCase())))return false}
+  return true}
+
+/* ---- pantry helpers ---- */
+const factor=u=>({kg:1000,l:1000}[u]||1);
+const expired=p=>p.exp&&daysUntil(p.exp)<0;
+const isLow=p=>{const q=+p.qty;return{kg:.5,g:50,l:.5,ml:100,pcs:1,packet:1}[p.unit]>=q};
+function status(p){if(!p.exp)return'fresh';const d=daysUntil(p.exp);return d<0?'expired':d<=3?'soon':'fresh'}
+function pantryNames(){return new Set(S.pantry.filter(p=>+p.qty>0&&!expired(p)).map(p=>norm(p.name)))}
+function haveAmt(n){const o={w:0,c:0};S.pantry.forEach(p=>{if(norm(p.name)!==n||expired(p))return;const[v,k]=pBase(p);o[k]+=v});return o}
+const expiringItems=()=>S.pantry.filter(p=>p.exp&&daysUntil(p.exp)<=3&&daysUntil(p.exp)>=0&&+p.qty>0).sort((a,b)=>a.exp.localeCompare(b.exp));
+const expiredItems=()=>S.pantry.filter(expired);
+const lowItems=()=>S.pantry.filter(p=>!expired(p)&&isLow(p));
+const SHELF={V:5,D:6,G:180,P:180,S:300,K:60,O:180};
+const LOC={V:'fridge',D:'fridge',G:'pantry',P:'pantry',S:'spices',K:'pantry',O:'pantry'};
+const LOCS=[['fridge','Refrigerator'],['freezer','Freezer'],['pantry','Kitchen pantry'],['spices','Spices & masalas']];
+function addToPantry(name,qty,unit,opt={}){const n=norm(name);const g=grp(n);const loc=opt.loc||LOC[g];
+  const ex=S.pantry.find(p=>norm(p.name)===n&&p.unit===unit&&p.loc===loc&&!expired(p));
+  if(ex){ex.qty=Math.round((+ex.qty+qty)*100)/100;save('pantry');return ex}
+  const it={id:uid(),name:cap(n),qty:Math.round(qty*100)/100,unit,loc,bought:iso(todayD()),exp:opt.exp||iso(addDays(todayD(),SHELF[g]||90)),photo:opt.photo||''};S.pantry.push(it);save('pantry');return it}
+function seedPantry(){const t=todayD();const d=n=>iso(addDays(t,n)),b=iso(addDays(t,-3));
+  const L=[['Potato',2,'kg','pantry',20],['Onion',1.5,'kg','pantry',25],['Tomato',500,'g','fridge',2],['Rice',5,'kg','pantry',300],['Wheat flour',2,'kg','pantry',90],['Besan',500,'g','pantry',120],
+  ['Curd',400,'g','fridge',2],['Milk',1,'l','fridge',1],['Paneer',200,'g','fridge',4],['Spinach',250,'g','fridge',1],['Green chilli',100,'g','fridge',6],['Coriander leaves',50,'g','fridge',0],['Mint leaves',30,'g','fridge',-1],
+  ['Cumin seeds',40,'g','spices',300],['Mustard seeds',100,'g','spices',300],['Turmeric powder',100,'g','spices',300],['Red chilli powder',100,'g','spices',300],['Coriander powder',100,'g','spices',300],['Garam masala',50,'g','spices',300],['Asafoetida',20,'g','spices',300],
+  ['Moong dal',1,'kg','pantry',200],['Toor dal',1,'kg','pantry',200],['Poha',500,'g','pantry',120],['Semolina',500,'g','pantry',120],['Ghee',300,'ml','pantry',150],['Oil',1,'l','pantry',200],['Butter',50,'g','fridge',20],['Green peas',300,'g','freezer',60],['Lemon',3,'pcs','fridge',8],['Cauliflower',1,'pcs','fridge',3]];
+  S.pantry=L.map(([name,qty,unit,loc,e])=>({id:uid(),name,qty,unit,loc,bought:b,exp:d(e),photo:''}));save('pantry')}
+
+/* ---- matching ---- */
+function matchRecipe(r,have){const req=[...new Set(r.names)].filter(n=>!isStaple(n));const miss=req.filter(n=>!have.has(n));const pct=req.length?Math.round(100*(req.length-miss.length)/req.length):100;return{r,pct,miss,have:req.filter(n=>have.has(n)),req}}
+function matchAll(have,useProfile=true){return allRecipes().filter(r=>!useProfile||passes(r)).map(r=>matchRecipe(r,have)).sort((a,b)=>b.pct-a.pct||a.miss.length-b.miss.length||total(a.r)-total(b.r))}
+
+/* ---- needs & shopping ---- */
+function addNeed(need,r,sv){const f=sv/r.sv;r.ing.forEach(i=>{const n=norm(i.n);if(isStaple(n))return;const[v,k]=toBase(i.q*f,i.u,n);const o=need[n]||(need[n]={w:0,c:0});o[k]+=v})}
+function missingFrom(need){const out=[];for(const n in need){const h=haveAmt(n);['w','c'].forEach(k=>{const o2=k==='w'?'c':'w';const q=need[n][k];if(q<=0)return;if(h[k]>=q-.01)return;if(h[k]===0&&h[o2]>0)return;out.push({n,k,q:q-h[k]})})}return out}
+function toShopItem(m){if(m.k==='c')return{name:cap(m.n),qty:Math.ceil(m.q-.001),unit:'pcs'};const liquid=LIQ.has(m.n);let q=m.q<1000?Math.ceil(m.q/50)*50:Math.ceil(m.q/100)*100;return{name:cap(m.n),qty:q,unit:liquid?'ml':'g'}}
+function addShop(it,src){const n=norm(it.name);const ex=S.shop.find(x=>!x.done&&norm(x.name)===n&&x.unit===it.unit);if(ex){ex.qty=Math.round((+ex.qty+it.qty)*100)/100}else S.shop.push({id:uid(),name:cap(n),qty:it.qty,unit:it.unit,done:false,src:src||'manual'})}
+function buildShopping(){const t=iso(todayD());const need={};Object.entries(S.plan).forEach(([d,day])=>{if(d<t)return;Object.values(day).forEach(id=>{const r=getR(id);if(r)addNeed(need,r,S.profile.family)})});
+  S.shop=S.shop.filter(i=>!(i.src==='plan'&&!i.done));let c=0;missingFrom(need).forEach(m=>{const it=toShopItem(m);const n=norm(it.name);if(S.shop.some(x=>!x.done&&norm(x.name)===n))return;S.shop.push({id:uid(),...it,done:false,src:'plan'});c++});save('shop');return c}
+function missingForRecipe(r,sv){const need={};addNeed(need,r,sv);return missingFrom(need).map(toShopItem)}
+function deductRecipe(r,sv){const need={};addNeed(need,r,sv);for(const n in need){['w','c'].forEach(k=>{let left=need[n][k];if(left<=0)return;S.pantry.filter(p=>norm(p.name)===n&&+p.qty>0&&pBase(p)[1]===k).sort((a,b)=>(a.exp||'9').localeCompare(b.exp||'9')).forEach(p=>{if(left<=0)return;const per=k==='w'?(p.unit==='pcs'&&PCSW[n]?PCSW[n]:factor(p.unit)):1;const avail=p.qty*per;const take=Math.min(avail,left);p.qty=Math.round((avail-take)/per*100)/100;left-=take})})}
+  S.pantry=S.pantry.filter(p=>+p.qty>0.001);save('pantry')}
+
+/* ---- planner ---- */
+function weekDays(off=0){const t=todayD();const m=addDays(t,-((t.getDay()+6)%7)+off*7);return[...Array(7)].map((_,i)=>addDays(m,i))}
+const EXPENSIVE=['paneer','cashews','almonds','cream','raisins','cheese'];
+function planCtx(){return{have:pantryNames(),soon:new Set(expiringItems().map(p=>norm(p.name)))}}
+function pickFor(slot,date,opt,ctx,exclude){const P=S.profile;let cands=allRecipes().filter(r=>fitsSlot(r,slot)&&passes(r)&&r.id!==exclude);
+  if(opt.quick){const q=cands.filter(r=>total(r)<=P.maxTime);if(q.length)cands=q}
+  if(!cands.length)return null;
+  const near=[];for(let k=-2;k<=2;k++){const day=S.plan[iso(addDays(new Date(date+'T00:00:00'),k))];if(day&&k!==0)Object.values(day).forEach(id=>near.push(id))}
+  const sameDay=Object.values(S.plan[date]||{});
+  let best=null,bs=-1e9;cands.forEach(r=>{let s=Math.random()*2.5;
+    if(opt.favs!==false&&S.favs.includes(r.id))s+=3;
+    if(opt.pantry!==false){s+=matchRecipe(r,ctx.have).pct/100*4;s+=Math.min(3,r.names.filter(n=>ctx.soon.has(n)).length)*1.5}
+    if(near.includes(r.id))s-=8;if(sameDay.includes(r.id))s-=10;
+    const used=opt.used?(opt.used[r.id]||0):0;s-=used*4;
+    if(total(r)>P.maxTime)s-=3;
+    if((P.cuisines||[]).includes(r.cuisine))s+=1.5;
+    if((P.diet||[]).includes('hp')&&r.tags.includes('hp'))s+=1.5;if((P.diet||[]).includes('lo')&&r.tags.includes('lo'))s+=1.5;
+    if(P.budget==='economy'&&r.names.some(n=>EXPENSIVE.includes(n)))s-=3;
+    if(s>bs){bs=s;best=r}});return best?best.id:null}
+function genPlan(opt){const days=weekDays(opt.off||0).map(iso);const t=iso(todayD());const ctx=planCtx();let miss=0;const used={};
+  days.forEach(d=>{if(d<t)return;S.plan[d]=S.plan[d]||{};if(opt.replace)opt.slots.forEach(s=>delete S.plan[d][s])});
+  days.forEach(d=>Object.values(S.plan[d]||{}).forEach(id=>used[id]=(used[id]||0)+1));
+  days.forEach(d=>{if(d<t)return;opt.slots.forEach(s=>{if(S.plan[d][s])return;const id=pickFor(s,d,{...opt,used},ctx);if(id){S.plan[d][s]=id;used[id]=(used[id]||0)+1}else miss++})});
+  save('plan');return miss}
+
+/* ---- formatting ---- */
+function fmtN(n){if(n>=10)return String(Math.round(n));const r=Math.round(n*4)/4;const w=Math.floor(r),f=r-w;const fr={0:'',.25:'¼',.5:'½',.75:'¾'}[f];return(w?w:'')+fr||'0'}
+function fmtIng(i,f,spice){let q=i.q*f;const n=norm(i.n);if(spice&&(n==='red chilli powder'||n==='green chilli'))q*=spice;let u=i.u;
+  if(u==='g'&&q>=1000){q/=1000;u='kg'}if(u==='ml'&&q>=1000){q/=1000;u='l'}const qs=(u==='g'||u==='ml')?String(Math.round(q/(q>=50?5:1))*(q>=50?5:1)||Math.round(q)):fmtN(q);
+  return u==='pcs'?qs:qs+' '+u}
+function fmtQty(q,u){q=Math.round(q*100)/100;if(u==='g'&&q>=1000)return q/1000+' kg';if(u==='ml'&&q>=1000)return q/1000+' l';return q+' '+u}
+const dayLabel=d=>d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+/* ===== views ===== */
+const ICON={home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',cal:'<rect x="3.500" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.500 10h17"/>',jar:'<path d="M8 3h8v3H8zM6.500 6h11A1.500 1.500 0 0 1 19 7.500V19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7.500A1.500 1.500 0 0 1 6.500 6z"/><path d="M9 12h6"/>',cart:'<path d="M3 4h2.500l2 11h10l2-8H7"/><circle cx="9" cy="19.500" r="1.400"/><circle cx="17" cy="19.500" r="1.400"/>',heart:'<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',shuffle:'<path d="M4 7h3c4 0 5 10 9 10h4M4 17h3c1.500 0 2.600-1.300 3.600-3M14 8.500C15 7.300 15.500 7 17 7h3M17 4l3 3-3 3M17 14l3 3-3 3"/>',check:'<path d="M5 12.500l4.500 4.500L19 7.500"/>',clock:'<circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/>',gear:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',camera:'<path d="M4 8h3l1.500-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.500"/>',trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',edit:'<path d="M4 20l1-4L16 5l3 3L8 19z"/>',chevL:'<path d="M15 5l-7 7 7 7"/>',chevR:'<path d="M9 5l7 7-7 7"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>',search:'<circle cx="11" cy="11" r="6.500"/><path d="M16 16l4 4"/>',sparkle:'<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>'};
+const ic=(n,s=22)=>`<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+const U={route:'home',recipe:null,cook:null,srv:null,checks:{},filters:{q:'',cat:'all',cuisine:'all',diet:[],coll:'all'},pq:'',ploc:'all',psort:'exp',pflag:'',weekOff:0,cookSel:null,cookPhoto:null,pick:null,arm:null,timer:null,gen:{slots:['B','L','S','D'],pantry:true,quick:false,favs:true,replace:false},ob:{jain:false,nog:false,spice:'medium'},pfPhoto:null,rfPhoto:null,editing:null};
+
+const tile=(r,c='')=>{const p=S.photos[r.id];return`<div class="tile ${c}" style="--h:${hue(r)}">${p?`<img src="${p}" alt="${esc(r.name)}">`:`<span class="e" aria-hidden="true">${r.e}</span>`}</div>`};
+const tagPills=(r,n=9)=>{const t=[...(total(r)<=20?['quick']:[]),...r.tags.filter(x=>x!=='nog'||!r.tags.includes('jain'))];return`<div class="tags">${t.slice(0,n).map(x=>`<span class="pill n">${TAGLABEL[x]}</span>`).join('')}</div>`};
+const dueTxt=d=>d<0?'Expired':d===0?'Expires today':d===1?'Expires tomorrow':'Expires in '+d+' days';
+const fmtDate=s=>s?new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+const swRow=(label,on,key)=>`<div class="sw"><span>${label}</span><button role="switch" aria-checked="${on}" aria-label="${label}" data-act="sw" data-k="${key}"></button></div>`;
+const dl=()=>`<datalist id="ingList">${Object.keys(M).map(n=>`<option value="${cap(n)}">`).join('')}</datalist>`;
+const empty=(t,s,b)=>`<div class="empty"><b>${t}</b><span>${s}</span>${b||''}</div>`;
+
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+function modal(html){$('#modal').innerHTML=`<div class="bd" data-act="bd"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`}
+const closeModal=()=>{$('#modal').innerHTML=''};
+const sh=t=>`<div class="sh-h"><h2>${t}</h2><button class="ib" data-act="closeM" aria-label="Close">${ic('x')}</button></div>`;
+function arm(key,fn){if(U.arm===key){U.arm=null;fn();return}U.arm=key;setTimeout(()=>{if(U.arm===key){U.arm=null;render()}},3000);render()}
+function readPhoto(file,max=720){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{const s=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};im.src=fr.result};fr.readAsDataURL(file)})}
+
+/* ---- nav ---- */
+const NAV=[['home','Home','home','Home'],['recipes','Recipes','book','Recipes'],['planner','Planner','cal','Meal Planner'],['pantry','Pantry','jar','My Pantry'],['shopping','Shopping','cart','Shopping List']];
+function renderNav(){const b={pantry:expiringItems().length+expiredItems().length,shopping:S.shop.filter(i=>!i.done).length};
+  $('#nav').innerHTML=NAV.map(([k,l,i,full])=>`<button class="nb ${U.route===k||(k==='recipes'&&U.route==='cook')?'on':''}" data-act="go" data-id="${k}" aria-label="${full}" ${U.route===k?'aria-current="page"':''}>${ic(i,24)}<span>${l}</span>${b[k]?`<span class="badge">${b[k]}</span>`:''}</button>`).join('')}
+function go(r){U.route=r;try{if(location.hash!=='#'+r)location.hash=r}catch(e){}window.scrollTo(0,0);render()}
+
+/* ---- HOME ---- */
+function mealCard(date,slot,label){const id=(S.plan[date]||{})[slot];const r=id&&getR(id);
+  if(!r)return`<article class="card meal none"><span class="sl">${label}</span><p class="mut sm">Nothing planned yet</p><button class="btn tang s" data-act="pick" data-d="${date}" data-s="${slot}">${ic('plus',16)} Pick a dish</button></article>`;
+  return`<article class="card meal">${tile(r)}<div class="mb"><span class="sl">${label}</span><h3>${esc(r.name)}</h3><span class="mut sm row">${ic('clock',14)} ${total(r)} min</span><div class="ba"><button class="btn pri s" data-act="open" data-id="${r.id}">View</button><button class="btn s" data-act="pick" data-d="${date}" data-s="${slot}">Change</button></div></div></article>`}
+function matchRow(m,extra=''){const r=m.r;return`<div class="card mrow"><button class="row grow" style="text-align:left" data-act="open" data-id="${r.id}">${tile(r,'sq')}<span class="grow"><b>${esc(r.name)}</b><span class="mut sm" style="display:block">${m.pct}% match · ${total(r)} min</span><span class="bar" style="display:block;margin-top:5px"><i style="width:${m.pct}%;display:block"></i></span>${m.miss.length?`<span class="sm" style="display:block;margin-top:4px;color:var(--tang-ink)">Missing: ${m.miss.slice(0,4).map(cap).join(', ')}${m.miss.length>4?' +'+(m.miss.length-4):''}</span>`:`<span class="pill good" style="margin-top:4px">Cook it now</span>`}</span></button>${extra}</div>`}
+function vHome(){const P=S.profile,h=new Date().getHours();const g=h<5?'Still up':h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
+  const td=iso(todayD()),plan=S.plan[td]||{};const planned=SLOTS.filter(([k])=>plan[k]).length;const soon=expiringItems(),exp=expiredItems(),pend=S.shop.filter(i=>!i.done);
+  const have=pantryNames();const ms=matchAll(have).filter(m=>m.pct>=50).slice(0,4);
+  return`<section class="hero"><span class="date">${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</span><h1>${g}, ${esc(P.name)}!</h1><p style="font-size:1.1rem;font-weight:700">What's cooking today?</p><p class="tag">Aaj kya banega? Pop it!</p>
+  <div class="stats"><button class="stat" data-act="go" data-id="planner"><b>${planned}/4</b><span>Meals planned today</span></button><button class="stat" data-act="go" data-id="pantry"><b>${S.pantry.length}</b><span>Items in pantry</span></button><button class="stat ${soon.length+exp.length?'alert':''}" data-act="pflagGo" data-v="soon"><b>${soon.length+exp.length}</b><span>Expiring soon</span></button><button class="stat" data-act="go" data-id="shopping"><b>${pend.length}</b><span>To buy</span></button></div></section>
+  ${!persistOK?`<div class="note" style="margin-top:12px">Your browser is blocking storage, so changes will be lost when you close this page.</div>`:''}
+  <div class="sec"><h2>Today's meals</h2><button class="btn s" data-act="go" data-id="planner">Full week</button></div>
+  <div class="grid g-meals">${SLOTS.map(([k,l])=>mealCard(td,k,l)).join('')}</div>
+  <div class="sec"><h2>Cook with what I have</h2><button class="btn s" data-act="go" data-id="cook">Find recipes</button></div>
+  ${ms.length?`<div class="grid g-two">${ms.map(m=>matchRow(m)).join('')}</div>`:empty('Nothing matches yet','Add a few ingredients to your pantry and RasoiPop will suggest what to cook.',`<button class="btn tang" data-act="pAdd">Add pantry items</button>`)}
+  <div class="sec"><h2>Quick actions</h2></div>
+  <div class="grid g-qa"><button class="btn pri" data-act="pAdd">${ic('plus',18)} Add pantry items</button><button class="btn pri" data-act="go" data-id="cook">${ic('search',18)} Find recipes</button><button class="btn pri" data-act="genOpen">${ic('sparkle',18)} Plan my week</button><button class="btn pri" data-act="buildShop">${ic('cart',18)} Generate shopping list</button></div>
+  <div class="sec"><h2>Expiring soon</h2><button class="btn s" data-act="pflagGo" data-v="soon">View all</button></div>
+  ${exp.length?`<div class="note" style="margin-bottom:10px"><span>${exp.length} item${exp.length>1?'s have':' has'} already expired: ${exp.slice(0,3).map(p=>esc(p.name)).join(', ')}</span><button class="btn s" data-act="pflagGo" data-v="expired">Review</button></div>`:''}
+  ${soon.length?`<div class="stack">${soon.slice(0,5).map(p=>`<div class="card mrow mt"><div class="grow"><b>${esc(p.name)}</b><span class="mut sm" style="display:block">${fmtQty(p.qty,p.unit)} · ${LOCS.find(l=>l[0]===p.loc)[1]}</span></div><span class="pill warn">${dueTxt(daysUntil(p.exp))}</span><button class="btn s" data-act="ideas" data-n="${esc(norm(p.name))}">Ideas</button></div>`).join('')}</div>`:empty('Nothing about to expire','Your pantry looks fresh.')}
+  <div class="sec"><h2>Need to buy</h2><button class="btn s" data-act="go" data-id="shopping">Open list</button></div>
+  ${pend.length?`<div class="chips wr">${pend.slice(0,10).map(i=>`<span class="chip">${esc(i.name)} · ${fmtQty(i.qty,i.unit)}</span>`).join('')}${pend.length>10?`<span class="chip">+${pend.length-10} more</span>`:''}</div>`:empty('Your list is empty','Plan your week and RasoiPop will list only what the pantry is missing.',`<button class="btn tang" data-act="buildShop">Generate shopping list</button>`)}`}
+
+/* ---- RECIPES ---- */
+function filterRecipes(){const f=U.filters,q=f.q.trim().toLowerCase();return allRecipes().filter(r=>{
+  if(f.cat!=='all'&&!r.cats.includes(f.cat))return false;if(f.cuisine!=='all'&&r.cuisine!==f.cuisine)return false;
+  if(f.coll==='fav'&&!S.favs.includes(r.id))return false;if(f.coll==='mine'&&!r.mine)return false;const c=S.cols.find(x=>x.id===f.coll);if(c&&!c.ids.includes(r.id))return false;
+  for(const d of f.diet){if(d==='veg')continue;if(d==='quick'){if(total(r)>20)return false}else if(!r.tags.includes(d))return false}
+  if(q&&!(r.name+' '+r.cuisine+' '+r.desc+' '+r.names.join(' ')).toLowerCase().includes(q))return false;return true}).sort((a,b)=>a.name.localeCompare(b.name))}
+function recCard(r){const f=S.favs.includes(r.id);return`<article class="rc"><button class="rc-main" data-act="open" data-id="${r.id}" aria-label="Open ${esc(r.name)}">${tile(r)}<div class="rc-b"><h3>${esc(r.name)}</h3><p class="mut sm">${esc(r.cuisine)} · ${total(r)} min</p>${tagPills(r,2)}</div></button><button class="heart ${f?'on':''}" data-act="fav" data-id="${r.id}" aria-pressed="${f}" aria-label="${f?'Remove from favourites':'Save to favourites'}">${ic('heart',20)}</button></article>`}
+function recGrid(){const L=filterRecipes();return L.length?`<div class="grid g-rec">${L.map(recCard).join('')}</div>`:empty('No recipes match','Try removing a filter, or search by ingredient.',`<button class="btn s" data-act="clearF">Clear filters</button>`)}
+function refreshRec(){const l=$('#recList');if(l){l.innerHTML=recGrid();$('#recCount').textContent=filterRecipes().length+' recipes'}}
+function vRecipes(){const f=U.filters;return`<div class="page-h"><div><h1>Recipes</h1><p class="mut" id="recCount">${filterRecipes().length} recipes</p></div><button class="btn tang" data-act="addRecipe">${ic('plus',18)} Add recipe</button></div>
+  <div class="search">${ic('search',18)}<input type="search" id="rq" placeholder="Search dish, cuisine or ingredient" value="${esc(f.q)}" data-in="rq" aria-label="Search recipes"></div>
+  <div class="chips" style="margin-top:10px"><button class="chip ${f.coll==='all'?'on':''}" data-act="rcoll" data-id="all">All</button><button class="chip ${f.coll==='fav'?'on':''}" data-act="rcoll" data-id="fav">${ic('heart',14)} Favourites (${S.favs.length})</button><button class="chip ${f.coll==='mine'?'on':''}" data-act="rcoll" data-id="mine">My recipes (${S.mine.length})</button>${S.cols.map(c=>`<button class="chip ${f.coll===c.id?'on':''}" data-act="rcoll" data-id="${c.id}">${esc(c.name)} (${c.ids.length})</button>`).join('')}<button class="chip" data-act="newCol">${ic('plus',14)} Collection</button></div>
+  <div class="chips"><button class="chip ${f.cat==='all'?'on':''}" data-act="rcat" data-id="all">All</button>${CATS.map(([k,l])=>`<button class="chip ${f.cat===k?'on':''}" data-act="rcat" data-id="${k}">${l}</button>`).join('')}</div>
+  <div class="chips">${DIETS.map(([k,l])=>`<button class="chip tg ${f.diet.includes(k)?'on':''}" data-act="rdiet" data-id="${k}" aria-pressed="${f.diet.includes(k)}">${l}</button>`).join('')}</div>
+  <div class="field" style="max-width:260px;margin:4px 0 14px"><label for="rcu">Cuisine</label><select id="rcu" data-ch="rcu"><option value="all">All cuisines</option>${CUIS.map(c=>`<option ${f.cuisine===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div id="recList">${recGrid()}</div>`}
+
+/* ---- recipe detail & cooking ---- */
+function renderOv(){const o=$('#ov');const r=U.cook?getR(U.cook.id):U.recipe?getR(U.recipe):null;
+  if(!r){o.innerHTML='';document.body.style.overflow='';return}
+  const keep=o.querySelector('.ov')?.scrollTop||0;o.innerHTML=U.cook?ovCook(r):ovDetail(r);document.body.style.overflow='hidden';const e=o.querySelector('.ov');if(e&&U.keepScroll)e.scrollTop=keep}
+function ingList(r,f,spice,checkable){const chk=U.checks[r.id]||[];const have=pantryNames();return r.ing.map((i,k)=>{const n=norm(i.n);const has=have.has(n)||isStaple(n);const on=chk.includes(k);
+  return`<button class="ing ${on?'done':''}" data-act="chk" data-k="${k}" role="checkbox" aria-checked="${on}"><span class="ck ${on?'on':''}">${ic('check',18)}</span><span class="t">${esc(cap(i.n))}</span><span class="row"><b class="num">${fmtIng(i,f,spice)}</b>${has?'':`<span class="pill warn">Need</span>`}</span></button>`}).join('')}
+function ovDetail(r){const P=S.profile;const sv=U.srv??P.family;const f=sv/r.sv;const sp={mild:.5,medium:1,spicy:1.5}[P.spice||'medium'];const have=pantryNames();const mt=matchRecipe(r,have);const isF=S.favs.includes(r.id);const note=S.notes[r.id]||'';const miss=missingForRecipe(r,sv);
+  return`<div class="ov"><div class="wrap ov-in"><div class="ov-top"><button class="ib" data-act="closeOv" aria-label="Back">${ic('chevL')}</button><button class="ib ${isF?'on':''}" data-act="fav" data-id="${r.id}" aria-pressed="${isF}" aria-label="Save to favourites">${ic('heart')}</button></div>
+  <div class="ov-hero">${tile(r,'wide')}</div>
+  <div class="stack" style="margin-top:14px"><div><h1>${esc(r.name)}</h1><p class="mut">${esc(r.cuisine)} · ${r.diff}${r.mine?' · Your recipe':''}</p></div><p>${esc(r.desc)}</p>
+  <div class="row wrapr"><span class="pill n">Prep ${r.pt} min</span><span class="pill n">Cook ${r.ct} min</span><span class="grow"></span><span class="row"><span class="lab">Servings</span><span class="step"><button data-act="srv" data-d="-1" aria-label="Fewer servings">${ic('minus',16)}</button><span class="num">${sv}</span><button data-act="srv" data-d="1" aria-label="More servings">${ic('plus',16)}</button></span></span></div>
+  ${tagPills(r)}
+  <div class="row wrapr"><button class="btn pri grow" data-act="startCook">Start cooking</button><button class="btn" data-act="planAdd">Add to plan</button><button class="btn" data-act="colOpen">Collections</button></div>
+  ${miss.length?`<div class="note"><span>Missing from pantry: ${miss.slice(0,5).map(m=>esc(m.name)).join(', ')}${miss.length>5?' +'+(miss.length-5):''}</span><button class="btn tang s" data-act="addMissing">Add to shopping list</button></div>`:`<div class="note good">Everything is in your pantry. Cook it now!</div>`}
+  <h2 style="margin-top:6px">Ingredients</h2>${sp!==1?`<p class="mut sm">Chilli adjusted for your ${P.spice} spice level.</p>`:''}<div>${ingList(r,f,sp)}</div>
+  <h2 style="margin-top:10px">Method</h2><div>${r.steps.map((s,i)=>`<div class="stp"><i>${i+1}</i><div>${esc(s.t)}${s.m?` <span class="pill warn">${s.m} min</span>`:''}</div></div>`).join('')}</div>
+  <h2 style="margin-top:10px">Nutrition per serving</h2><div class="nutr"><div><b>${r.nut[0]}</b><span>kcal</span></div><div><b>${r.nut[1]} g</b><span>Protein</span></div><div><b>${r.nut[2]} g</b><span>Carbs</span></div><div><b>${r.nut[3]} g</b><span>Fat</span></div></div>
+  <div class="field"><label for="note">My cooking notes</label><textarea id="note" data-ch="note" data-id="${r.id}" placeholder="Less salt, add extra ghee, kids liked it…">${esc(note)}</textarea></div>
+  <div class="row wrapr"><label class="btn" for="rphoto" style="cursor:pointer">${ic('camera',18)} ${S.photos[r.id]?'Change photo':'Add my photo'}</label><input type="file" accept="image/*" id="rphoto" data-ch="rphoto" data-id="${r.id}" hidden>${S.photos[r.id]?`<button class="btn s" data-act="rmPhoto" data-id="${r.id}">Remove photo</button>`:''}
+  ${r.mine?`<button class="btn" data-act="editRecipe" data-id="${r.id}">${ic('edit',18)} Edit</button><button class="btn danger" data-act="delRecipe" data-id="${r.id}">${U.arm==='dr'+r.id?'Tap again to delete':'Delete'}</button>`:''}</div></div></div></div>`}
+function ovCook(r){const c=U.cook,P=S.profile;const sv=U.srv??P.family;const f=sv/r.sv;const sp={mild:.5,medium:1,spicy:1.5}[P.spice||'medium'];const n=r.steps.length;
+  const tm=U.timer?`<div class="tmr"><span>${esc(U.timer.label)}</span><span class="v num" id="tmrv">${mmss(Math.max(0,Math.ceil((U.timer.end-Date.now())/1000)))}</span><span class="row"><button class="btn s" data-act="tadd">+1 min</button><button class="btn s" data-act="tstop">Stop</button></span></div>`:'';
+  const top=`<div class="ov-top"><button class="ib" data-act="exitCook" aria-label="Back to recipe">${ic('chevL')}</button><b style="align-self:center;text-align:center">${esc(r.name)}</b><button class="btn s" data-act="cIng">Ingredients</button></div>`;
+  if(c.step>=n)return`<div class="ov"><div class="wrap ov-in cook">${top}<div class="stack" style="align-items:center;text-align:center;padding:30px 0"><div style="font-size:4rem">🎉</div><h1>${esc(r.name)} is ready!</h1><p class="mut">Enjoy your meal. Want to take what you used out of the pantry?</p><button class="btn pri full" data-act="usePantry">Update my pantry</button><button class="btn full" data-act="exitCook">Back to recipe</button><button class="btn full" data-act="closeOv">Done</button></div></div></div>`;
+  const st=r.steps[c.step];
+  return`<div class="ov"><div class="wrap ov-in cook">${top}<div class="row"><div class="bar grow" style="height:10px"><i style="width:${(c.step+1)/n*100}%"></i></div><b class="num">Step ${c.step+1}/${n}</b></div>
+  <div class="row wrapr"><span class="lab">Servings</span><span class="step"><button data-act="srv" data-d="-1" aria-label="Fewer servings">${ic('minus',16)}</button><span class="num">${sv}</span><button data-act="srv" data-d="1" aria-label="More servings">${ic('plus',16)}</button></span></div>
+  ${tm}${c.ing?`<div class="card pad">${ingList(r,f,sp)}</div>`:''}
+  <div class="grow" style="display:flex;flex-direction:column;gap:16px;justify-content:center"><p class="cook-step">${esc(st.t)}</p>${st.m&&!U.timer?`<button class="btn tang" style="min-height:56px" data-act="tstart" data-m="${st.m}">${ic('clock',20)} Start ${st.m}-minute timer</button>`:''}</div>
+  <div class="cook-nav"><button class="btn" data-act="cPrev" ${c.step===0?'disabled':''}>Back</button><button class="btn pri" data-act="cNext">${c.step===n-1?'Finish':'Next step'}</button></div></div></div>`}
+const mmss=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.3,.6].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.25,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.25);o.start(a.currentTime+t);o.stop(a.currentTime+t+.26)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+setInterval(()=>{if(!U.timer)return;const left=Math.max(0,Math.ceil((U.timer.end-Date.now())/1000));const el=$('#tmrv');if(el)el.textContent=mmss(left);if(left<=0){beep();toast('Timer done!');U.timer=null;renderOv()}},500);
+
+/* ---- recipe form ---- */
+function recipeForm(r){U.rfPhoto=null;const e=r||{name:'',cuisine:'North Indian',cats:['L'],pt:10,ct:20,sv:2,diff:'Easy',desc:'',ing:[],steps:[],nut:[0,0,0,0]};U.editing=r?r.id:null;
+  modal(`${sh(r?'Edit recipe':'Add your recipe')}<div class="field"><label for="rf-name">Recipe name</label><input type="text" id="rf-name" value="${esc(e.name)}"></div>
+  <div class="field"><label for="rf-desc">Short description</label><input type="text" id="rf-desc" value="${esc(e.desc)}"></div>
+  <div class="two"><div class="field"><label for="rf-cu">Cuisine</label><select id="rf-cu">${CUIS.map(c=>`<option ${e.cuisine===c?'selected':''}>${c}</option>`).join('')}</select></div><div class="field"><label for="rf-df">Difficulty</label><select id="rf-df">${['Easy','Medium','Hard'].map(c=>`<option ${e.diff===c?'selected':''}>${c}</option>`).join('')}</select></div></div>
+  <div class="lab">Categories</div><div class="chips wr">${CATS.map(([k,l])=>`<button class="chip sm ${e.cats.includes(k)?'on':''}" data-act="rfCat" data-id="${k}" aria-pressed="${e.cats.includes(k)}">${l}</button>`).join('')}</div>
+  <div class="two"><div class="field"><label for="rf-pt">Prep time (min)</label><input type="number" id="rf-pt" min="0" value="${e.pt}"></div><div class="field"><label for="rf-ct">Cook time (min)</label><input type="number" id="rf-ct" min="0" value="${e.ct}"></div></div>
+  <div class="field"><label for="rf-sv">Servings</label><input type="number" id="rf-sv" min="1" value="${e.sv}"></div>
+  <div class="field"><label for="rf-ing">Ingredients, one per line (e.g. 200 g paneer, 2 onion, 1 tsp cumin seeds)</label><textarea id="rf-ing" style="min-height:130px">${esc(e.ing.map(i=>`${i.q} ${i.u==='pcs'?'':i.u+' '}${i.n}`).join('\n'))}</textarea></div>
+  <div class="field"><label for="rf-st">Method, one step per line (add @10 at the end for a 10 minute timer)</label><textarea id="rf-st" style="min-height:130px">${esc(e.steps.map(s=>s.t+(s.m?'@'+s.m:'')).join('\n'))}</textarea></div>
+  <div class="row wrapr"><label class="btn" for="rf-ph" style="cursor:pointer">${ic('camera',18)} Add photo</label><input type="file" accept="image/*" id="rf-ph" data-ch="rfPhoto" hidden><span class="mut sm" id="rf-phn"></span></div>
+  <p class="mut sm" id="rf-err" role="alert"></p><button class="btn pri full" data-act="rfSave">Save recipe</button>`)}
+function saveRecipe(){const name=$('#rf-name').value.trim();const ing=$('#rf-ing').value.split('\n').map(parseIng).filter(Boolean);const steps=$('#rf-st').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{const m=s.match(/@(\d+)\s*$/);return m?{t:s.replace(/@\d+\s*$/,'').trim(),m:+m[1]}:{t:s}});
+  const cats=$$('#modal [data-act=rfCat].on').map(b=>b.dataset.id);const err=m=>{$('#rf-err').textContent=m;$('#rf-err').style.color='var(--bad)'};
+  if(!name)return err('Give your recipe a name.');if(!ing.length)return err('Add at least one ingredient, one per line like "200 g paneer".');if(!steps.length)return err('Add at least one method step.');if(!cats.length)return err('Pick at least one category.');
+  const old=U.editing?S.mine.find(x=>x.id===U.editing):null;const id=old?old.id:'u_'+uid();
+  const rec={id,name,e:old?old.e:'🍽️',cuisine:$('#rf-cu').value,cats,pt:+$('#rf-pt').value||0,ct:+$('#rf-ct').value||0,sv:Math.max(1,+$('#rf-sv').value||1),diff:$('#rf-df').value,desc:$('#rf-desc').value.trim()||'My own recipe.',ing,steps,nut:old?old.nut:[0,0,0,0],mine:true};
+  if(old)Object.assign(old,rec);else S.mine.push(rec);if(U.rfPhoto)S.photos[id]=U.rfPhoto;save('mine','photos');closeModal();toast('Recipe saved');U.recipe=id;U.srv=null;render()}
+
+/* ---- PLANNER ---- */
+function vPlanner(){const days=weekDays(U.weekOff);const t=iso(todayD());const a=days[0],b=days[6];const mo=d=>d.toLocaleDateString('en-IN',{month:'short'});
+  const n=days.reduce((s,d)=>s+Object.keys(S.plan[iso(d)]||{}).length,0);
+  return`<div class="page-h"><div><h1>Meal planner</h1><p class="mut">${n} of 28 meals planned this week</p></div><div class="row"><button class="ib" data-act="weekNav" data-d="-1" aria-label="Previous week">${ic('chevL')}</button><b class="num" style="min-width:120px;text-align:center">${a.getDate()} ${mo(a)} – ${b.getDate()} ${mo(b)}</b><button class="ib" data-act="weekNav" data-d="1" aria-label="Next week">${ic('chevR')}</button></div></div>
+  <div class="row wrapr" style="margin-bottom:14px"><button class="btn tang" data-act="genOpen">${ic('sparkle',18)} Plan my week</button><button class="btn" data-act="buildShop">${ic('cart',18)} Build shopping list</button><button class="btn" data-act="clearWeek">${U.arm==='cw'?'Tap again to clear':'Clear week'}</button>${U.weekOff?`<button class="btn s" data-act="weekNav" data-d="0">This week</button>`:''}</div>
+  <div class="grid g-two">${days.map(d=>{const k=iso(d),day=S.plan[k]||{};return`<article class="card day ${k<t?'past':''}"><div class="day-h"><h3>${dayLabel(d)} ${k===t?'<span class="pill good">Today</span>':''}</h3><button class="btn s" data-act="dayOpen" data-d="${k}">${ic('copy',14)} Copy / swap</button></div>${SLOTS.map(([s,l])=>{const r=day[s]&&getR(day[s]);return`<div class="slot"><span class="sl">${l}</span>${r?`<button class="sl-main" data-act="open" data-id="${r.id}">${tile(r,'sq')}<span><b>${esc(r.name)}</b><small>${total(r)} min</small></span></button><button class="ib" data-act="regen" data-d="${k}" data-s="${s}" aria-label="Swap ${esc(r.name)} for another dish">${ic('shuffle',18)}</button><button class="ib" data-act="rm" data-d="${k}" data-s="${s}" aria-label="Remove ${esc(r.name)}">${ic('x',18)}</button>`:`<button class="sl-add" data-act="pick" data-d="${k}" data-s="${s}">${ic('plus',16)} Add dish</button>`}</div>`}).join('')}</article>`}).join('')}</div>`}
+function openPick(date,slot,all=false,q=''){U.pick={date,slot,all,q};const l=SLOTS.find(x=>x[0]===slot)[1];
+  modal(`${sh(l+' · '+dayLabel(new Date(date+'T00:00:00')))}<div class="search">${ic('search',18)}<input type="search" id="pickq" placeholder="Search dishes" data-in="pickq" value="${esc(q)}" aria-label="Search dishes"></div><div class="chips"><button class="chip ${all?'':'on'}" data-act="pickAll" data-v="0">Suggested</button><button class="chip ${all?'on':''}" data-act="pickAll" data-v="1">All recipes</button><button class="chip tg" data-act="surprise">${ic('shuffle',14)} Surprise me</button></div><div id="pickList" class="stack"></div>`);refreshPick()}
+function refreshPick(){const p=U.pick,have=pantryNames(),q=p.q.trim().toLowerCase();let L=allRecipes();if(!p.all)L=L.filter(r=>fitsSlot(r,p.slot)&&passes(r));if(q)L=L.filter(r=>(r.name+' '+r.names.join(' ')).toLowerCase().includes(q));
+  L=L.map(r=>matchRecipe(r,have)).sort((a,b)=>b.pct-a.pct||a.r.name.localeCompare(b.r.name)).slice(0,60);
+  $('#pickList').innerHTML=L.length?L.map(m=>`<button class="mrow" data-act="setSlot" data-id="${m.r.id}">${tile(m.r,'sq')}<span class="grow"><b>${esc(m.r.name)}</b><span class="mut sm" style="display:block">${esc(m.r.cuisine)} · ${total(m.r)} min</span></span><span class="pill ${m.pct===100?'good':m.pct>=70?'warn':'n'}">${m.pct}% pantry</span></button>`).join(''):empty('No dishes found','Try All recipes or a different search.')}
+function openGen(){const g=U.gen,P=S.profile;modal(`${sh('Plan my week')}<p class="mut">RasoiPop fills your week using your preferences, favourites, what is in the pantry and what expires soon, and avoids repeats.</p>
+  <div class="lab">Meals to plan</div><div class="chips wr">${SLOTS.map(([k,l])=>`<button class="chip ${g.slots.includes(k)?'on':''}" data-act="genSlot" data-id="${k}" aria-pressed="${g.slots.includes(k)}">${l}</button>`).join('')}</div>
+  <div class="row wrapr"><span class="lab">Family members</span><span class="step"><button data-act="genFam" data-d="-1" aria-label="Fewer people">${ic('minus',16)}</button><span class="num">${P.family}</span><button data-act="genFam" data-d="1" aria-label="More people">${ic('plus',16)}</button></span></div>
+  ${swRow('Use pantry ingredients first',g.pantry,'g:pantry')}${swRow('Quick meals only (up to '+P.maxTime+' min)',g.quick,'g:quick')}${swRow('Prefer my favourites',g.favs,'g:favs')}${swRow('Replace meals I already planned',g.replace,'g:replace')}
+  <p class="mut sm">Diet: ${[P.jain&&'Jain',P.nog&&'No onion-garlic',...(P.diet||[]).map(d=>({vegan:'Vegan',gf:'Gluten-free',hp:'High protein',lo:'Low oil'}[d]))].filter(Boolean).join(', ')||'Vegetarian'}. Change these in settings.</p>
+  <button class="btn tang full" data-act="genGo">Generate plan</button>`)}
+function openDay(date){const days=weekDays(U.weekOff).map(iso).filter(d=>d!==date);modal(`${sh('Copy or swap '+dayLabel(new Date(date+'T00:00:00')))}<div class="stack">${days.map(d=>`<div class="card mrow mt"><b class="grow">${dayLabel(new Date(d+'T00:00:00'))}</b><button class="btn s" data-act="dayDo" data-m="copy" data-from="${date}" data-to="${d}">Copy here</button><button class="btn s" data-act="dayDo" data-m="swap" data-from="${date}" data-to="${d}">Swap</button></div>`).join('')}</div>`)}
+function openPlanAdd(){const r=getR(U.recipe);const days=[...weekDays(0),...weekDays(1)].map(iso).filter(d=>d>=iso(todayD()));modal(`${sh('Add '+esc(r.name)+' to plan')}<div class="field"><label for="pa-d">Day</label><select id="pa-d">${days.map(d=>`<option value="${d}">${dayLabel(new Date(d+'T00:00:00'))}</option>`).join('')}</select></div><div class="field"><label for="pa-s">Meal</label><select id="pa-s">${SLOTS.map(([k,l])=>`<option value="${k}" ${fitsSlot(r,k)?'selected':''}>${l}</option>`).join('')}</select></div><button class="btn pri full" data-act="planDo">Add to plan</button>`)}
+
+/* ---- PANTRY ---- */
+const STEP={kg:.5,g:50,l:.5,ml:100,pcs:1,packet:1};
+function pantryList(){let L=S.pantry.slice();const q=U.pq.trim().toLowerCase();if(q)L=L.filter(p=>p.name.toLowerCase().includes(q));if(U.ploc!=='all')L=L.filter(p=>p.loc===U.ploc);
+  if(U.pflag==='low')L=L.filter(isLow);else if(U.pflag)L=L.filter(p=>status(p)===U.pflag);
+  L.sort((a,b)=>U.psort==='name'?a.name.localeCompare(b.name):U.psort==='recent'?(b.bought||'').localeCompare(a.bought||''):(a.exp||'9999').localeCompare(b.exp||'9999'));
+  return L.length?`<div class="stack">${L.map(pitem).join('')}</div>`:empty(S.pantry.length?'No items match':'Your pantry is empty','Add what you have at home and RasoiPop will suggest recipes.',`<button class="btn tang" data-act="pAdd">Add an item</button>`)}
+function pitem(p){const st=status(p),d=p.exp?daysUntil(p.exp):null;const h=[28,40,95,120,18,50,110,35][hash(p.name)%8];
+  return`<article class="card pit"><div class="tile sq" style="--h:${h}">${p.photo?`<img src="${p.photo}" alt="${esc(p.name)}">`:`<span class="e" style="font-family:var(--f-head);font-size:1.5rem">${esc(p.name[0]||'?')}</span>`}</div><div class="stack" style="gap:6px;min-width:0"><div class="row wrapr"><h3 class="grow">${esc(p.name)}</h3>${st==='expired'?'<span class="pill bad">Expired</span>':st==='soon'?`<span class="pill warn">${dueTxt(d)}</span>`:'<span class="pill good">Fresh</span>'}${isLow(p)&&st!=='expired'?'<span class="pill low">Low stock</span>':''}</div>
+  <span class="mut sm">${LOCS.find(l=>l[0]===p.loc)[1]} · Bought ${fmtDate(p.bought)} · Expires ${fmtDate(p.exp)}</span>
+  <div class="row wrapr"><span class="qty"><button data-act="pq" data-id="${p.id}" data-d="-1" aria-label="Decrease ${esc(p.name)}">${ic('minus',16)}</button><b class="num">${fmtQty(p.qty,p.unit)}</b><button data-act="pq" data-id="${p.id}" data-d="1" aria-label="Increase ${esc(p.name)}">${ic('plus',16)}</button></span><span class="grow"></span><button class="ib" data-act="pEdit" data-id="${p.id}" aria-label="Edit ${esc(p.name)}">${ic('edit',18)}</button><button class="ib" style="${U.arm==='pd'+p.id?'background:var(--bad-bg);color:var(--bad);width:auto;padding:0 10px;font-weight:800':''}" data-act="pDel" data-id="${p.id}" aria-label="Delete ${esc(p.name)}">${U.arm==='pd'+p.id?'Delete?':ic('trash',18)}</button></div></div></article>`}
+function vPantry(){const c={fresh:0,soon:0,expired:0};S.pantry.forEach(p=>c[status(p)]++);const low=lowItems().length;const f=U.pflag;
+  const sb=(k,l,n,cls)=>`<button class="chip ${f===k?'on':''}" data-act="pflag" data-v="${k}" aria-pressed="${f===k}">${l} <b>${n}</b></button>`;
+  return`<div class="page-h"><div><h1>My pantry</h1><p class="mut">${S.pantry.length} items across your kitchen</p></div></div>
+  ${c.expired||c.soon?`<div class="note" style="margin-bottom:10px"><span>${c.soon?c.soon+' expiring within 3 days':''}${c.soon&&c.expired?' · ':''}${c.expired?c.expired+' expired':''}. Use them first!</span><button class="btn tang s" data-act="go" data-id="cook">Cook with these</button></div>`:''}
+  <div class="chips">${sb('', 'All',S.pantry.length)}${sb('fresh','Fresh',c.fresh)}${sb('soon','Expiring soon',c.soon)}${sb('expired','Expired',c.expired)}${sb('low','Low stock',low)}</div>
+  <div class="search">${ic('search',18)}<input type="search" id="pqi" placeholder="Search pantry" value="${esc(U.pq)}" data-in="pq" aria-label="Search pantry"></div>
+  <div class="chips" style="margin-top:10px"><button class="chip ${U.ploc==='all'?'on':''}" data-act="ploc" data-id="all">All</button>${LOCS.map(([k,l])=>`<button class="chip ${U.ploc===k?'on':''}" data-act="ploc" data-id="${k}">${l}</button>`).join('')}</div>
+  <div class="field" style="max-width:240px;margin-bottom:12px"><label for="psort">Sort by</label><select id="psort" data-ch="psort"><option value="exp" ${U.psort==='exp'?'selected':''}>Expiry date</option><option value="name" ${U.psort==='name'?'selected':''}>Name</option><option value="recent" ${U.psort==='recent'?'selected':''}>Recently bought</option></select></div>
+  <div id="pList">${pantryList()}</div><button class="fab" data-act="pAdd">${ic('plus',22)} Add item</button>`}
+function pantryForm(id){const p=id?S.pantry.find(x=>x.id===id):null;U.pfPhoto=p?p.photo:null;U.editing=id||null;const t=iso(todayD());
+  modal(`${sh(p?'Edit item':'Add to pantry')}${dl()}<div class="field"><label for="pf-name">Ingredient</label><input type="text" id="pf-name" list="ingList" value="${esc(p?p.name:'')}" placeholder="e.g. Tomato" data-ch="pfName" autocomplete="off"></div>
+  <div class="two"><div class="field"><label for="pf-qty">Quantity</label><input type="number" id="pf-qty" min="0" step="any" value="${p?p.qty:1}"></div><div class="field"><label for="pf-unit">Unit</label><select id="pf-unit">${['kg','g','l','ml','pcs','packet'].map(u=>`<option ${p&&p.unit===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
+  <div class="field"><label for="pf-loc">Stored in</label><select id="pf-loc">${LOCS.map(([k,l])=>`<option value="${k}" ${p&&p.loc===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="two"><div class="field"><label for="pf-b">Purchase date</label><input type="date" id="pf-b" value="${p?p.bought:t}"></div><div class="field"><label for="pf-e">Expiry date</label><input type="date" id="pf-e" value="${p?p.exp:''}"></div></div>
+  <div class="row wrapr"><label class="btn" for="pf-ph" style="cursor:pointer">${ic('camera',18)} ${p&&p.photo?'Change photo':'Add photo'}</label><input type="file" accept="image/*" id="pf-ph" data-ch="pfPhoto" hidden><span class="mut sm" id="pf-phn"></span></div>
+  <p class="mut sm" id="pf-err" role="alert"></p><button class="btn pri full" data-act="pSave">${p?'Save changes':'Add to pantry'}</button>`)}
+
+/* ---- SHOPPING ---- */
+function vShopping(){const pend=S.shop.filter(i=>!i.done),done=S.shop.filter(i=>i.done);const pendingAdd=done.filter(i=>!i.added);
+  return`<div class="page-h"><div><h1>Shopping list</h1><p class="mut"><b class="num">${pend.length}</b> item${pend.length===1?'':'s'} to buy</p></div><button class="btn tang" data-act="buildShop">${ic('sparkle',18)} Build from my week</button></div>
+  <div class="card pad stack">${dl()}<div class="row wrapr" style="align-items:flex-end"><div class="field grow" style="min-width:150px"><label for="si-n">Add an item</label><input type="text" id="si-n" list="ingList" placeholder="e.g. Paneer" data-enter="sAdd" autocomplete="off"></div><div class="field" style="width:84px"><label for="si-q">Qty</label><input type="number" id="si-q" min="0" step="any" value="1" data-enter="sAdd"></div><div class="field" style="width:96px"><label for="si-u">Unit</label><select id="si-u">${['pcs','g','kg','ml','l','packet'].map(u=>`<option>${u}</option>`).join('')}</select></div><button class="btn pri" data-act="sAdd">${ic('plus',18)} Add</button></div>
+  ${swRow('Add to pantry automatically when I tick an item',S.autoPantry,'autoPantry')}</div>
+  ${!S.shop.length?`<div style="margin-top:14px">${empty('Your list is empty','Plan your meals, then build the list. Only what the pantry is missing will be added.',`<button class="btn tang" data-act="buildShop">Build from my week</button>`)}</div>`:`
+  ${GROUPS.map(([k,l])=>{const items=S.shop.filter(i=>grp(norm(i.name))===k).sort((a,b)=>a.done-b.done||a.name.localeCompare(b.name));return items.length?`<div class="gh">${l} <span class="pill n">${items.filter(i=>!i.done).length} left</span></div><div class="stack" style="gap:6px">${items.map(i=>`<div class="card sit ${i.done?'done':''}"><button class="ck ${i.done?'on':''}" role="checkbox" aria-checked="${i.done}" aria-label="Mark ${esc(i.name)} as purchased" data-act="tick" data-id="${i.id}">${ic('check',18)}</button><div class="nm" style="min-width:0"><b>${esc(i.name)}</b>${i.src==='plan'?'<span class="mut sm" style="display:block">For your meal plan</span>':''}${i.added?'<span class="pill good" style="margin-top:2px">In pantry</span>':''}</div><div class="row" style="gap:4px"><input type="number" min="0" step="any" value="${i.qty}" data-ch="sqty" data-id="${i.id}" aria-label="Quantity of ${esc(i.name)}"><span class="sm mut">${i.unit}</span></div><button class="ib" data-act="sdel" data-id="${i.id}" aria-label="Delete ${esc(i.name)}">${ic('trash',18)}</button></div>`).join('')}</div>`:''}).join('')}
+  <div class="row wrapr" style="margin-top:18px">${done.length?`<button class="btn" data-act="sclear">Clear completed (${done.length})</button>`:''}${!S.autoPantry&&pendingAdd.length?`<button class="btn pri" data-act="sPantry">Add ${pendingAdd.length} purchased to pantry</button>`:''}</div>`}`}
+
+/* ---- COOK WITH WHAT I HAVE ---- */
+const COMMON=['potato','onion','tomato','rice','curd','milk','paneer','wheat flour','besan','semolina','poha','moong dal','toor dal','spinach','cauliflower','green peas','carrot','capsicum','lemon','ginger','garlic','green chilli','coriander leaves','cumin seeds','mustard seeds','garam masala','ghee','butter','bread','sev'];
+function cookSet(){if(!U.cookSel)U.cookSel=[...pantryNames()];return new Set(U.cookSel)}
+function shopForNames(r,names){const need={};addNeed(need,{ing:r.ing.filter(i=>names.includes(norm(i.n))),sv:r.sv},S.profile.family);return Object.entries(need).flatMap(([n,o])=>['w','c'].filter(k=>o[k]>0).map(k=>toShopItem({n,k,q:o[k]})))}
+function vCook(){const set=cookSet();const all=matchAll(set).filter(m=>m.req.some(n=>set.has(n)));
+  const now=all.filter(m=>m.pct===100&&m.req.length),almost=all.filter(m=>m.pct<100&&m.miss.length<=2),explore=all.filter(m=>m.miss.length>=3&&m.pct>=40).slice(0,8);
+  const sec=(t,s,L)=>`<div class="sec"><div><h2>${t}</h2><p class="mut sm">${s}</p></div><span class="pill n">${L.length}</span></div>${L.length?`<div class="grid g-two">${L.slice(0,12).map(m=>cookRow(m)).join('')}</div>`:`<p class="mut sm">Nothing here yet.</p>`}`;
+  return`<div class="page-h"><div><h1>Cook with what I have</h1><p class="mut">Pick your ingredients and see what you can cook, best matches first.</p></div></div>
+  <div class="card pad stack">${dl()}<div class="row" style="align-items:flex-end"><div class="field grow"><label for="ci">Add an ingredient</label><input type="text" id="ci" list="ingList" placeholder="Search or type, e.g. paneer" data-enter="cAdd" autocomplete="off"></div><button class="btn pri" data-act="cAdd">${ic('plus',18)} Add</button></div>
+  <div class="row wrapr"><button class="btn s" data-act="cUse">Use my pantry</button><button class="btn s" data-act="cClear">Clear all</button><label class="btn s" for="cph" style="cursor:pointer">${ic('camera',16)} Photo of my shelf</label><input type="file" accept="image/*" id="cph" data-ch="cphoto" hidden></div>
+  ${U.cookPhoto?`<div class="stack"><img class="thumb" src="${U.cookPhoto}" alt="Your ingredients photo"><p class="sm mut">Automatic recognition needs an AI service that is not connected here, so tap the ingredients you can see in your photo.</p><div class="chips wr">${COMMON.filter(n=>!set.has(n)).map(n=>`<button class="chip sm" data-act="cTag" data-n="${n}">+ ${cap(n)}</button>`).join('')}</div></div>`:''}
+  <div class="lab">${set.size} ingredient${set.size===1?'':'s'} selected</div>${set.size?`<div class="chips wr">${[...set].sort().map(n=>`<button class="chip on sm" data-act="cRm" data-n="${esc(n)}" aria-label="Remove ${esc(n)}">${esc(cap(n))} ${ic('x',12)}</button>`).join('')}</div>`:`<p class="mut sm">Nothing selected yet.</p>`}
+  <p class="mut sm">Salt, water, oil, turmeric and chilli powder are treated as always available${S.profile.staples===false?' (turned off in settings)':''}. Your diet and allergy settings are applied.</p></div>
+  ${sec('100% match · Cook it now','You have everything',now)}${sec('Almost there','Missing 1–2 ingredients',almost)}${sec('Explore','Missing 3 or more',explore)}`}
+function cookRow(m){const r=m.r;return`<article class="card pad stack" style="gap:8px"><button class="row" style="text-align:left" data-act="open" data-id="${r.id}">${tile(r,'sq')}<span class="grow"><b>${esc(r.name)}</b><span class="mut sm" style="display:block">${m.pct}% match · ${total(r)} min</span></span></button><div class="bar"><i style="width:${m.pct}%"></i></div>
+  <div class="sm"><b>Have:</b> ${m.have.map(cap).join(', ')||'—'}</div>${m.miss.length?`<div class="sm" style="color:var(--tang-ink)"><b>Missing:</b> ${m.miss.map(cap).join(', ')}</div><button class="btn s tang" data-act="cMissing" data-id="${r.id}">Add missing to shopping list</button>`:`<button class="btn s pri" data-act="open" data-id="${r.id}">Cook it now</button>`}</article>`}
+
+/* ---- SETTINGS & ONBOARDING ---- */
+function openSettings(keep){const P=S.profile;const prev=keep&&$('#modal .sheet')?$('#modal .sheet').scrollTop:0;
+  const chip=(on,act,id,l)=>`<button class="chip ${on?'on':''}" data-act="${act}" data-id="${id}" aria-pressed="${on}">${l}</button>`;
+  modal(`${sh('Profile & settings')}<div class="field"><label for="pname">Your name</label><input type="text" id="pname" value="${esc(P.name)}" data-ch="pname"></div>
+  <div class="row wrapr"><span class="lab">Family members</span><span class="step"><button data-act="fam" data-d="-1" aria-label="Fewer people">${ic('minus',16)}</button><span class="num">${P.family}</span><button data-act="fam" data-d="1" aria-label="More people">${ic('plus',16)}</button></span></div>
+  <div class="lab">Dietary preferences</div><div class="chips wr">${[['vegan','Vegan'],['gf','Gluten-free'],['hp','High protein'],['lo','Low oil']].map(([k,l])=>chip((P.diet||[]).includes(k),'dtog',k,l)).join('')}</div>
+  ${swRow('Jain food only',!!P.jain,'jain')}${swRow('No onion and garlic',!!P.nog,'nog')}
+  <div class="lab">Spice level</div><div class="chips wr">${['mild','medium','spicy'].map(k=>chip(P.spice===k,'spice',k,cap(k))).join('')}</div>
+  <div class="lab">Preferred cuisines</div><div class="chips wr">${CUIS.filter(c=>c!=='Jain').map(c=>chip((P.cuisines||[]).includes(c),'cuis',c,c)).join('')}</div>
+  <div class="lab">Allergies and restrictions</div><div class="chips wr">${[...new Set(['dairy','gluten','nuts','peanuts','sesame',...(P.allergies||[])])].map(a=>chip((P.allergies||[]).includes(a),'allT',a,cap(a))).join('')}</div>
+  <div class="row"><input type="text" id="allx" placeholder="Other ingredient to avoid" data-enter="allAdd" aria-label="Other ingredient to avoid"><button class="btn s" data-act="allAdd">Add</button></div>
+  <div class="two"><div class="field"><label for="pmax">Preferred cooking time</label><select id="pmax" data-ch="pmax">${[20,30,45,60,90].map(m=>`<option value="${m}" ${P.maxTime===m?'selected':''}>Up to ${m} min</option>`).join('')}</select></div><div class="field"><label>Budget</label><div class="chips">${[['economy','Economy'],['balanced','Balanced'],['premium','Premium']].map(([k,l])=>chip(P.budget===k,'budget',k,l)).join('')}</div></div></div>
+  ${swRow('Assume I always have salt, oil, water, turmeric and chilli powder',P.staples!==false,'staples')}
+  <div class="card pad stack"><b>Your data</b><p class="mut sm">Everything is stored on this device and works offline. Copy a backup to move it to another device or browser.</p><div class="row wrapr"><button class="btn s" data-act="backup">Copy backup</button></div><textarea id="restore" placeholder="Paste a backup here to restore it" aria-label="Paste a backup to restore"></textarea><div class="row wrapr"><button class="btn s" data-act="restore">Restore backup</button><button class="btn s danger" data-act="reset">${U.arm==='reset'?'Tap again to reset':'Reset to sample pantry and plan'}</button></div></div>
+  ${persistOK?'':`<p class="sm" style="color:var(--bad)">Storage is blocked in this browser, so changes will not survive a refresh.</p>`}`);
+  if(keep&&$('#modal .sheet'))$('#modal .sheet').scrollTop=prev}
+function onboard(){const o=U.ob;const chip=(on,act,id,l)=>`<button class="chip ${on?'on':''}" data-act="${act}" data-id="${id}" aria-pressed="${on}">${l}</button>`;
+  $('#modal').innerHTML=`<div class="bd"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="obh"><div class="stack" style="align-items:center;text-align:center"><div style="font-size:2.6rem">🍲</div><h1 id="obh">Welcome to Rasoi<span style="color:var(--tang)">Pop</span></h1><p class="tag" style="font-family:var(--f-head);color:var(--tang-ink)">Aaj kya banega? Pop it!</p></div>
+  <p class="mut">Tell us a little so we can suggest the right dishes. We will start you with a sample pantry and a plan for this week, so you can see how everything connects. Edit or delete anything.</p>
+  <div class="field"><label for="ob-name">Your name</label><input type="text" id="ob-name" placeholder="e.g. Priya" autocomplete="given-name"></div>
+  <div class="field"><label for="ob-fam">People eating at home</label><select id="ob-fam">${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${n===3?'selected':''}>${n}</option>`).join('')}</select></div>
+  <div class="chips wr">${chip(o.jain,'obT','jain','Jain')}${chip(o.nog,'obT','nog','No onion-garlic')}</div>
+  <div class="lab">Spice level</div><div class="chips wr">${['mild','medium','spicy'].map(k=>chip(o.spice===k,'obS',k,cap(k))).join('')}</div>
+  <button class="btn tang full" data-act="obGo">Let's pop!</button></div></div>`}
+
+/* ---- render ---- */
+function render(){if(!S.profile){onboard();return}const v=$('#view');v.innerHTML=({home:vHome,recipes:vRecipes,planner:vPlanner,pantry:vPantry,shopping:vShopping,cook:vCook}[U.route]||vHome)();renderNav();renderOv();$('#avatar').textContent=(S.profile.name||'R')[0].toUpperCase()}
+function after(...ks){save(...ks);render()}
+
+/* ---- actions ---- */
+const acts={
+go:el=>{closeModal();go(el.dataset.id)},
+settings:()=>openSettings(),
+closeM:()=>closeModal(),
+bd:(el,e)=>{if(e.target===el&&S.profile)closeModal()},
+open:el=>{closeModal();U.recipe=el.dataset.id;U.srv=null;U.keepScroll=false;renderOv();const o=$('#ov .ov');if(o)o.scrollTop=0},
+closeOv:()=>{U.recipe=null;U.cook=null;U.srv=null;try{U.wl&&U.wl.release()}catch(e){}render()},
+fav:el=>{const id=el.dataset.id;S.favs=S.favs.includes(id)?S.favs.filter(x=>x!==id):[...S.favs,id];U.keepScroll=true;after('favs')},
+pflagGo:el=>{U.pflag=el.dataset.v;U.route='pantry';go('pantry')},
+/* recipes */
+rcat:el=>{U.filters.cat=el.dataset.id;render()},rcoll:el=>{U.filters.coll=el.dataset.id;render()},
+rdiet:el=>{const d=el.dataset.id,a=U.filters.diet;U.filters.diet=a.includes(d)?a.filter(x=>x!==d):[...a,d];render()},
+clearF:()=>{U.filters={q:'',cat:'all',cuisine:'all',diet:[],coll:'all'};render()},
+newCol:()=>modal(`${sh('New collection')}<div class="field"><label for="col-n">Collection name</label><input type="text" id="col-n" placeholder="e.g. Sunday lunch" data-enter="colMake"></div><button class="btn pri full" data-act="colMake">Create</button>`),
+colMake:()=>{const n=$('#col-n').value.trim();if(!n)return;const c={id:'c_'+uid(),name:n,ids:U.recipe?[U.recipe]:[]};S.cols.push(c);save('cols');closeModal();toast('Collection created');render()},
+colOpen:()=>{const r=getR(U.recipe);modal(`${sh('Collections')}<div class="stack">${S.cols.length?S.cols.map(c=>`<button class="mrow" data-act="colTog" data-id="${c.id}"><span class="ck ${c.ids.includes(r.id)?'on':''}">${ic('check',18)}</span><b class="grow">${esc(c.name)}</b><span class="mut sm">${c.ids.length} recipes</span></button>`).join(''):'<p class="mut">No collections yet.</p>'}</div><button class="btn full" data-act="newCol">${ic('plus',18)} New collection</button>`)},
+colTog:el=>{const c=S.cols.find(x=>x.id===el.dataset.id);c.ids=c.ids.includes(U.recipe)?c.ids.filter(x=>x!==U.recipe):[...c.ids,U.recipe];save('cols');acts.colOpen();render()},
+addRecipe:()=>recipeForm(),editRecipe:el=>recipeForm(S.mine.find(x=>x.id===el.dataset.id)),
+rfCat:el=>{el.classList.toggle('on');el.setAttribute('aria-pressed',el.classList.contains('on'))},rfSave:saveRecipe,
+delRecipe:el=>arm('dr'+el.dataset.id,()=>{const id=el.dataset.id;S.mine=S.mine.filter(x=>x.id!==id);S.favs=S.favs.filter(x=>x!==id);S.cols.forEach(c=>c.ids=c.ids.filter(x=>x!==id));Object.values(S.plan).forEach(d=>Object.keys(d).forEach(s=>{if(d[s]===id)delete d[s]}));delete S.photos[id];U.recipe=null;save('mine','favs','cols','plan','photos');toast('Recipe deleted');render()}),
+rmPhoto:el=>{delete S.photos[el.dataset.id];U.keepScroll=true;after('photos')},
+srv:el=>{const r=getR(U.cook?U.cook.id:U.recipe);U.srv=Math.min(30,Math.max(1,(U.srv??S.profile.family)+ +el.dataset.d));U.keepScroll=true;renderOv()},
+chk:el=>{const id=U.cook?U.cook.id:U.recipe;const a=U.checks[id]||(U.checks[id]=[]);const k=+el.dataset.k;const i=a.indexOf(k);i<0?a.push(k):a.splice(i,1);U.keepScroll=true;renderOv()},
+addMissing:()=>{const r=getR(U.recipe);const m=missingForRecipe(r,U.srv??S.profile.family);m.forEach(i=>addShop(i,'recipe'));save('shop');toast(m.length+' item'+(m.length===1?'':'s')+' added to your shopping list');render()},
+planAdd:openPlanAdd,
+planDo:()=>{const d=$('#pa-d').value,s=$('#pa-s').value;(S.plan[d]=S.plan[d]||{})[s]=U.recipe;closeModal();toast('Added to your plan');after('plan')},
+/* cooking */
+startCook:()=>{U.cook={id:U.recipe,step:0,ing:false};try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>U.wl=l).catch(()=>{})}catch(e){}U.keepScroll=false;renderOv()},
+exitCook:()=>{U.cook=null;try{U.wl&&U.wl.release()}catch(e){}U.keepScroll=false;renderOv()},
+cPrev:()=>{U.cook.step=Math.max(0,U.cook.step-1);renderOv()},cNext:()=>{U.cook.step++;renderOv()},cIng:()=>{U.cook.ing=!U.cook.ing;U.keepScroll=true;renderOv()},
+tstart:el=>{const m=+el.dataset.m;U.timer={end:Date.now()+m*60000,label:m+'-minute timer'};renderOv()},tstop:()=>{U.timer=null;renderOv()},tadd:()=>{if(U.timer)U.timer.end+=60000;renderOv()},
+usePantry:()=>{const r=getR(U.cook.id);deductRecipe(r,U.srv??S.profile.family);toast('Pantry updated');acts.closeOv()},
+/* planner */
+weekNav:el=>{const d=+el.dataset.d;U.weekOff=d===0?0:U.weekOff+d;render()},
+pick:el=>openPick(el.dataset.d,el.dataset.s),pickAll:el=>openPick(U.pick.date,U.pick.slot,el.dataset.v==='1',U.pick.q),
+surprise:()=>{const p=U.pick;const id=pickFor(p.slot,p.date,{},planCtx(),(S.plan[p.date]||{})[p.slot]);if(!id)return toast('No dish fits your preferences for this meal');acts.setSlot({dataset:{id}})},
+setSlot:el=>{const p=U.pick;(S.plan[p.date]=S.plan[p.date]||{})[p.slot]=el.dataset.id;closeModal();toast('Meal updated');after('plan')},
+rm:el=>{delete S.plan[el.dataset.d][el.dataset.s];after('plan')},
+regen:el=>{const d=el.dataset.d,s=el.dataset.s;const id=pickFor(s,d,{},planCtx(),S.plan[d][s]);if(!id)return toast('No other dish fits your preferences');S.plan[d][s]=id;toast('Swapped to '+getR(id).name);after('plan')},
+dayOpen:el=>openDay(el.dataset.d),
+dayDo:el=>{const{from,to,m}=el.dataset;const a={...(S.plan[from]||{})},b={...(S.plan[to]||{})};S.plan[to]=a;if(m==='swap')S.plan[from]=b;closeModal();toast(m==='swap'?'Days swapped':'Meals copied');after('plan')},
+clearWeek:()=>arm('cw',()=>{const t=iso(todayD());weekDays(U.weekOff).map(iso).forEach(d=>{if(d>=t)delete S.plan[d]});toast('Week cleared');after('plan')}),
+genOpen:()=>{if(U.route!=='planner'&&U.route!=='home')U.route='planner';openGen()},
+genSlot:el=>{const g=U.gen.slots,k=el.dataset.id;U.gen.slots=g.includes(k)?g.filter(x=>x!==k):[...g,k];openGen()},
+genFam:el=>{S.profile.family=Math.min(12,Math.max(1,S.profile.family+ +el.dataset.d));save('profile');openGen()},
+genGo:()=>{if(!U.gen.slots.length)return toast('Pick at least one meal to plan');const miss=genPlan({...U.gen,off:U.weekOff});closeModal();const c=buildShopping();toast(miss?'Planned, but '+miss+' meal'+(miss>1?'s':'')+' had no match for your preferences':'Week planned. '+c+' item'+(c===1?'':'s')+' added to your shopping list');if(U.route==='home')U.route='planner';go('planner')},
+buildShop:()=>{const c=buildShopping();toast(c?c+' missing item'+(c>1?'s':'')+' added':'Your pantry already covers your plan');go('shopping')},
+/* pantry */
+pAdd:()=>pantryForm(),pEdit:el=>pantryForm(el.dataset.id),
+pSave:()=>{const name=$('#pf-name').value.trim(),qty=parseFloat($('#pf-qty').value);const err=m=>{$('#pf-err').textContent=m;$('#pf-err').style.color='var(--bad)'};if(!name)return err('Enter the ingredient name.');if(!(qty>0))return err('Enter a quantity greater than zero.');
+  const o={name:cap(norm(name)),qty,unit:$('#pf-unit').value,loc:$('#pf-loc').value,bought:$('#pf-b').value||iso(todayD()),exp:$('#pf-e').value||iso(addDays(todayD(),SHELF[grp(norm(name))]||90)),photo:U.pfPhoto||''};
+  if(U.editing){Object.assign(S.pantry.find(x=>x.id===U.editing),o);toast('Item updated')}else{const ex=S.pantry.find(p=>norm(p.name)===norm(name)&&p.unit===o.unit&&p.loc===o.loc&&p.exp===o.exp);if(ex){ex.qty=Math.round((+ex.qty+qty)*100)/100;toast('Added to existing '+ex.name)}else{S.pantry.push({id:uid(),...o});toast(o.name+' added')}}
+  closeModal();after('pantry')},
+pDel:el=>arm('pd'+el.dataset.id,()=>{S.pantry=S.pantry.filter(p=>p.id!==el.dataset.id);toast('Item removed');after('pantry')}),
+pq:el=>{const p=S.pantry.find(x=>x.id===el.dataset.id);const s=STEP[p.unit]||1;p.qty=Math.max(0,Math.round((+p.qty+ +el.dataset.d*s)*100)/100);if(p.qty<=0){S.pantry=S.pantry.filter(x=>x!==p);toast(p.name+' finished and removed')}after('pantry')},
+ploc:el=>{U.ploc=el.dataset.id;render()},pflag:el=>{U.pflag=el.dataset.v;render()},
+/* shopping */
+sAdd:()=>{const n=$('#si-n').value.trim(),q=parseFloat($('#si-q').value);if(!n)return toast('Type an item name first');if(!(q>0))return toast('Enter a quantity');addShop({name:n,qty:q,unit:$('#si-u').value},'manual');after('shop')},
+tick:el=>{const it=S.shop.find(x=>x.id===el.dataset.id);it.done=!it.done;
+  if(it.done&&S.autoPantry){const p=addToPantry(it.name,+it.qty,it.unit);it.added=true;toast(it.name+' added to your pantry')}
+  else if(!it.done&&it.added){const n=norm(it.name);const p=S.pantry.find(x=>norm(x.name)===n&&x.unit===it.unit);if(p){p.qty=Math.round((+p.qty-it.qty)*100)/100;if(p.qty<=0)S.pantry=S.pantry.filter(x=>x!==p)}it.added=false;save('pantry')}
+  after('shop')},
+sdel:el=>{S.shop=S.shop.filter(x=>x.id!==el.dataset.id);after('shop')},
+sclear:()=>{S.shop=S.shop.filter(x=>!x.done);toast('Completed items cleared');after('shop')},
+sPantry:()=>{let c=0;S.shop.filter(i=>i.done&&!i.added).forEach(i=>{addToPantry(i.name,+i.qty,i.unit);i.added=true;c++});toast(c+' item'+(c===1?'':'s')+' added to your pantry');after('shop')},
+/* cook with */
+cAdd:()=>{const el=$('#ci');const n=norm(el.value);if(!n)return;const s=cookSet();s.add(n);U.cookSel=[...s];render();const i=$('#ci');i&&i.focus()},
+cRm:el=>{U.cookSel=[...cookSet()].filter(x=>x!==el.dataset.n);render()},cTag:el=>{const s=cookSet();s.add(el.dataset.n);U.cookSel=[...s];render()},
+cUse:()=>{U.cookSel=[...pantryNames()];render()},cClear:()=>{U.cookSel=[];U.cookPhoto=null;render()},
+cMissing:el=>{const r=getR(el.dataset.id);const set=cookSet();const names=matchRecipe(r,set).miss;const L=shopForNames(r,names);L.forEach(i=>addShop(i,'recipe'));save('shop');toast(L.length+' item'+(L.length===1?'':'s')+' added to your shopping list');renderNav()},
+ideas:el=>{U.cookSel=[el.dataset.n];go('cook')},
+/* settings */
+sw:el=>{const k=el.dataset.k;if(k==='autoPantry'){S.autoPantry=!S.autoPantry;save('autoPantry');render();return}
+  if(k.startsWith('g:')){const g=k.slice(2);U.gen[g]=!U.gen[g];openGen();return}
+  if(k==='staples')S.profile.staples=S.profile.staples===false;else S.profile[k]=!S.profile[k];save('profile');openSettings(true);render()},
+fam:el=>{S.profile.family=Math.min(12,Math.max(1,S.profile.family+ +el.dataset.d));save('profile');openSettings(true);render()},
+dtog:el=>{const a=S.profile.diet||[],k=el.dataset.id;S.profile.diet=a.includes(k)?a.filter(x=>x!==k):[...a,k];save('profile');openSettings(true)},
+spice:el=>{S.profile.spice=el.dataset.id;save('profile');openSettings(true)},
+cuis:el=>{const a=S.profile.cuisines||[],k=el.dataset.id;S.profile.cuisines=a.includes(k)?a.filter(x=>x!==k):[...a,k];save('profile');openSettings(true)},
+allT:el=>{const a=S.profile.allergies||[],k=el.dataset.id;S.profile.allergies=a.includes(k)?a.filter(x=>x!==k):[...a,k];save('profile');openSettings(true)},
+allAdd:()=>{const v=$('#allx').value.trim().toLowerCase();if(!v)return;const a=S.profile.allergies||[];if(!a.includes(v))S.profile.allergies=[...a,v];save('profile');openSettings(true)},
+budget:el=>{S.profile.budget=el.dataset.id;save('profile');openSettings(true)},
+backup:()=>{const j=JSON.stringify({v:1,...S});const ta=$('#restore');const done=()=>toast('Backup copied. Paste it somewhere safe.');try{navigator.clipboard.writeText(j).then(done).catch(()=>{ta.value=j;ta.select();toast('Copy the backup text from the box')})}catch(e){ta.value=j;ta.select();toast('Copy the backup text from the box')}},
+restore:()=>{try{const d=JSON.parse($('#restore').value);if(!d||!d.profile||!Array.isArray(d.pantry))throw 0;['profile','pantry','plan','shop','favs','cols','mine','notes','photos','autoPantry'].forEach(k=>{if(k in d)S[k]=d[k]});save(...Object.keys(S));closeModal();toast('Backup restored');render()}catch(e){toast('That does not look like a RasoiPop backup')}},
+reset:()=>arm('reset',()=>{seedPantry();S.plan={};S.shop=[];genPlan({slots:['B','L','S','D'],off:0});buildShopping();save('plan','shop');closeModal();toast('Sample pantry and plan restored');render()}),
+obT:el=>{U.ob[el.dataset.id]=!U.ob[el.dataset.id];const n=$('#ob-name').value,f=$('#ob-fam').value;onboard();$('#ob-name').value=n;$('#ob-fam').value=f},
+obS:el=>{U.ob.spice=el.dataset.id;const n=$('#ob-name').value,f=$('#ob-fam').value;onboard();$('#ob-name').value=n;$('#ob-fam').value=f},
+obGo:()=>{const name=$('#ob-name').value.trim();if(!name){$('#ob-name').focus();return toast('Please tell us your name')}
+  S.profile={name,family:+$('#ob-fam').value,diet:[],jain:U.ob.jain,nog:U.ob.nog,spice:U.ob.spice,allergies:[],cuisines:[],maxTime:45,budget:'balanced',staples:true};seedPantry();genPlan({slots:['B','L','S','D'],off:0});buildShopping();save('profile','plan','shop');closeModal();toast('Welcome, '+name+'! Your week is ready.');render()}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=acts[el.dataset.act];if(f)f(el,e)});
+document.addEventListener('input',e=>{const k=e.target.dataset.in;if(!k)return;const v=e.target.value;
+  if(k==='rq'){U.filters.q=v;refreshRec()}else if(k==='pq'){U.pq=v;$('#pList').innerHTML=pantryList()}else if(k==='pickq'){U.pick.q=v;refreshPick()}});
+document.addEventListener('change',async e=>{const t=e.target,k=t.dataset.ch;if(!k)return;
+  try{
+  if(k==='rcu'){U.filters.cuisine=t.value;render()}
+  else if(k==='psort'){U.psort=t.value;render()}
+  else if(k==='pname'){if(t.value.trim()){S.profile.name=t.value.trim();save('profile');render()}}
+  else if(k==='pmax'){S.profile.maxTime=+t.value;save('profile')}
+  else if(k==='note'){S.notes[t.dataset.id]=t.value;save('notes');toast('Note saved')}
+  else if(k==='sqty'){const it=S.shop.find(x=>x.id===t.dataset.id);const q=parseFloat(t.value);if(q>0){it.qty=q;after('shop')}else render()}
+  else if(k==='pfName'){const e2=$('#pf-e');const n=norm(t.value);if(e2&&!e2.value&&n){e2.value=iso(addDays(todayD(),SHELF[grp(n)]||90));if(!U.editing)$('#pf-loc').value=LOC[grp(n)]}}
+  else if(t.files&&t.files[0]){const img=await readPhoto(t.files[0],k==='cphoto'?900:720);
+    if(k==='rphoto'){S.photos[t.dataset.id]=img;U.keepScroll=true;after('photos')}
+    else if(k==='rfPhoto'){U.rfPhoto=img;$('#rf-phn').textContent='Photo ready'}
+    else if(k==='pfPhoto'){U.pfPhoto=img;$('#pf-phn').textContent='Photo ready'}
+    else if(k==='cphoto'){U.cookPhoto=img;render()}
+    if(!persistOK)toast('Storage is full or blocked. This photo may not be kept.')}
+  }catch(err){toast('Could not read that file')}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.enter){e.preventDefault();acts[e.target.dataset.enter]()}
+  if(e.key==='Escape'){if($('#modal').innerHTML&&S.profile)closeModal();else if(U.cook||U.recipe)acts.closeOv()}});
+const setOnline=()=>{const off=navigator.onLine===false;$('#offPill').hidden=!off};
+window.addEventListener('offline',()=>{setOnline();toast('You are offline. Everything still works.')});
+window.addEventListener('online',()=>{setOnline();toast('Back online')});
+window.addEventListener('hashchange',()=>{const r=location.hash.slice(1);if(['home','recipes','planner','pantry','shopping','cook'].includes(r)&&r!==U.route){U.route=r;render()}});
+if(!window.claude&&'serviceWorker' in navigator&&location.protocol.startsWith('http')){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+
+/* ---- boot ---- */
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+(function boot(){const h=location.hash.slice(1);if(['home','recipes','planner','pantry','shopping','cook'].includes(h))U.route=h;
+  if(S.profile&&!S.pantry){seedPantry()}if(!S.pantry)S.pantry=[];setOnline();render()})();
+})();
+</script>
+</body></html>
